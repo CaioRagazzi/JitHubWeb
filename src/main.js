@@ -3,6 +3,8 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import firebase from 'firebase'
+import './registerServiceWorker'
+import ArgonDashboard from './plugins/argon-dashboard'
 
 Vue.config.productionTip = false
 
@@ -22,6 +24,7 @@ firebase.initializeApp(firebaseConfig);
 
 firebase.auth().onAuthStateChanged(() => {
   if(!app){
+    Vue.use(ArgonDashboard)
     app = new Vue({
       router,
       store,

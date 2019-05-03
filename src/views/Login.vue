@@ -14,26 +14,21 @@
                     <div class="card-body px-lg-5 py-lg-5">
 
                             <base-input class="input-group-alternative mb-3"
-                                        placeholder="Email"
+                                        placeholder="CPF"
                                         addon-left-icon="ni ni-email-83"
                                         v-model="login">
                             </base-input>
 
                             <base-input class="input-group-alternative"
-                                        placeholder="Password"
+                                        placeholder="Senha"
                                         type="password"
                                         addon-left-icon="ni ni-lock-circle-open"
                                         v-model="senha">
                             </base-input>
 
                             <div class="text-center">
-                                <base-button type="primary" class="my-4">Sign in</base-button>
+                                <base-button v-on:click="logar" type="primary" class="my-4">Sign in</base-button>
                             </div>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-6 text-right">
-                        <router-link to="/register" class="text-light"><small>Create new account</small></router-link>
                     </div>
                 </div>
             </div>
@@ -64,7 +59,7 @@ export default {
             console.log('logando')
             firebase.auth().signInWithEmailAndPassword(usuario, this.senha).then(
                 (user) => {
-                    this.$router.replace('home')
+                    this.$router.replace('dashboard')
                 },
                 (err) => {
                     alert('Oops...' + err.message)
