@@ -1,68 +1,58 @@
 <template>
     <div>
-
+      <b-table :items="items"></b-table>
     </div>
 </template>
 <script>
-  // Charts
-  import * as chartConfigs from '@/components/Charts/config';
-  import LineChart from '@/components/Charts/LineChart';
-  import BarChart from '@/components/Charts/BarChart';
-
-  // Tables
-  import SocialTrafficTable from './Dashboard/SocialTrafficTable';
-  import PageVisitsTable from './Dashboard/PageVisitsTable';
+  import Vue from 'vue'
+  import firebase from 'firebase'
 
   export default {
-    components: {
-      LineChart,
-      BarChart,
-      PageVisitsTable,
-      SocialTrafficTable,
-    },
     data() {
       return {
-        bigLineChart: {
-          allData: [
-            [0, 20, 10, 30, 15, 40, 20, 60, 60],
-            [0, 20, 5, 25, 10, 30, 15, 40, 40]
-          ],
-          activeIndex: 0,
-          chartData: {
-            datasets: [],
-            labels: [],
-          },
-          extraOptions: chartConfigs.blueChartOptions,
-        },
-        redBarChart: {
-          chartData: {
-            labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            datasets: [{
-              label: 'Sales',
-              data: [25, 20, 30, 22, 17, 29]
-            }]
-          }
-        }
+      
       };
     },
-    methods: {
-      initBigChart(index) {
-        let chartData = {
-          datasets: [
-            {
-              label: 'Performance',
-              data: this.bigLineChart.allData[index]
-            }
-          ],
-          labels: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        };
-        this.bigLineChart.chartData = chartData;
-        this.bigLineChart.activeIndex = index;
-      }
+    computed: {
+      
     },
-    mounted() {
-      this.initBigChart(0);
+    methods: {
+      async items(){
+        var db = firebase.firestore();
+
+        var teste = []
+
+        await db.collection("Respostas")
+          .get().then(function(querySnapshot) {
+            querySnapshot.forEach(function(doc) {
+            // console.log(doc.id, " => ", doc.data());
+            teste.push(doc.data())
+            });
+          })
+          .catch(function(error) {
+            console.log("Error getting documents: ", error);
+          });
+          
+          var teste2 = teste.filter(this.filtro)
+          console.log(teste2)
+          return teste2
+
+          var asdasd = [{nome:'caio', idade:'13'},{nome:'caio', idade:'13'},{nome:'caio', idade:'13'},{nome:'caio', idade:'13'},{nome:'caio', idade:'13'}]
+
+      },
+      filtro(value){
+        
+        var value1
+
+        if (value.reference.id == "Teste Pergunta reference"){
+          value1 = value.Idade
+          
+        }
+        return value1
+      }
     }
   };
 </script>
-<style></style>
+<style>
+  
+</style>

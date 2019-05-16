@@ -5,8 +5,12 @@ import store from './store'
 import firebase from 'firebase'
 import './registerServiceWorker'
 import ArgonDashboard from './plugins/argon-dashboard'
+import BootstrapVue from 'bootstrap-vue'
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 Vue.config.productionTip = false
+Vue.use(BootstrapVue)
 
 let app = '';
 
@@ -17,7 +21,7 @@ var firebaseConfig = {
   projectId: "jithub",
   storageBucket: "jithub.appspot.com",
   messagingSenderId: "373189356168",
-  appId: "1:373189356168:web:fd0f0619654e33c7"
+  appId: "1:373189356168:web:ad39131d86a8af6e"
 };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
