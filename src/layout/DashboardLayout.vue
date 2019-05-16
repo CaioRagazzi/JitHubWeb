@@ -8,7 +8,7 @@
       <template slot="links">
         <sidebar-item
           :link="{
-            name: 'Dashboard',
+            name: 'Listagem Inventário',
             icon: 'ni ni-tv-2 text-primary',
             path: '/dashboard'
           }"
