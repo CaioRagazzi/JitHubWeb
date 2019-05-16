@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import AuthLayout from './layout/AuthLayout.vue'
 import DashboardLayout from '@/layout/DashboardLayout'
+import Register from '@/views/Register'
 import firebase from 'firebase'
 
 Vue.use(Router)
@@ -56,6 +57,11 @@ const router = new Router({
           path: '/tables',
           name: 'tables',
           component: () => import(/* webpackChunkName: "demo" */ './views/Tables.vue')
+        },
+        {
+          path: '/register',
+          name: 'register',
+          component: () => import(/* webpackChunkName: "demo" */ './views/Register.vue')
         }
       ]
     },
