@@ -1,7 +1,7 @@
 <template>
     <div>
       <div class="pt-1 pl-1">
-        <button :disabled="docAnterior == '/Nivel1'" type="button" class="btn btn-secondary" @click="voltar"><</button>
+        <button type="button" class="btn btn-secondary" @click="voltar"><</button>
       </div>
       <div class="row pl-3 pb-5 pt-2">
         <div v-for="item in botoes" :key="item.id" class="pt-1 pl-1">
