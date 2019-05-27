@@ -16,7 +16,8 @@
       
       <div class="card">
         <div class="card-body">
-          <perguntasFormulario :docData="docData"/>
+          <h1>Formulário</h1>
+          <perguntasFormulario :docData="docData" v-show="showPerguntas"/>
         </div>
       </div>
 
@@ -29,8 +30,8 @@
           id="modal-prevent-closing"
           @ok="adicionarNovoNivel"
         >
-          <b-form-input v-model="inputNivel" placeholder="Nível" required></b-form-input>
-          <b-form-input v-model="inputNextNivel" placeholder="Próximo Nível/Formulario" required></b-form-input>
+          <b-form-input v-model="inputNivel" placeholder="Nível" class="mb-2"></b-form-input>
+          <b-form-input v-model="inputNextNivel" placeholder="Próximo Nível/Formulario" ></b-form-input>
         </b-modal>
 
       </div>
@@ -48,6 +49,7 @@
     },
     data() {
       return {
+        showPerguntas: true,
         loading: false,
         botoes: [],
         db: firebase.firestore(),
@@ -86,10 +88,11 @@
           })
         })
       },
-      cliqueItem(doc){
+      async cliqueItem(doc){
         var instance = this
         if (Object.entries(doc.data()).length === 1 && doc.data().hasOwnProperty("collection")){
-          this.db.collection(doc.ref.path + '/Nivel').get().then(function(querySnapshot){
+          this.showPerguntas = false
+          await this.db.collection(doc.ref.path + '/Nivel').get().then(await function(querySnapshot){
             if (querySnapshot.docs.length !=0){
               instance.loading = true
               instance.botoes = []
@@ -102,6 +105,7 @@
             }
           })
         } else {
+          this.showPerguntas = true
           this.collection = doc.data().collection
           this.docData = doc.data()
         }
@@ -149,9 +153,17 @@
         .set({
           collection: {
               pai: instance.collection.atual + '/',
-              atual: instance.collection.atual + '/' + instance.inputNivel + '/Nivel'
+              atual: instance.collection.atual + '/' + instance.inputNivel + '/Nivel',
+              doc: instance.collection.atual + '/' + instance.inputNivel + '/Nivel/' + instance.inputNextNivel
             }
         })
+      },
+      isDocDataEmpty() {
+        if (Object.entries(this.docData).length > 1){
+          return true
+        } else if (Object.entries(this.docData).length <= 1){
+          return false
+        }
       }
     }
 }
