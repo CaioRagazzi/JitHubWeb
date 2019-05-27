@@ -1,26 +1,27 @@
 <template>
     <div>
       <div class="pt-1 pl-1">
-        <button type="button" class="btn btn-secondary" @click="voltar"><</button>
+        <button :disabled="collection.atual == 'Nivel1'" type="button" class="btn btn-secondary" @click="voltarInicio">Início</button>
+        <button :disabled="collection.atual == 'Nivel1'" type="button" class="btn btn-secondary" @click="voltar"><</button>
       </div>
       <div class="text-center">
         <b-spinner v-if="loading" style="width: 3rem; height: 3rem;"></b-spinner>
       </div>
       <div class="row pl-3 pb-5 pt-2">
         <div v-for="item in botoes" :key="item.id" class="pt-1 pl-1">
-          <button type="button" class="btn btn-outline-secondary" @click="clique(item, item.ref.path)"> {{ item.id }} </button>
+          <button type="button" class="btn btn-outline-secondary" @click="cliqueItem(item, item.ref.path)"> {{ item.id }} </button>
         </div>
 
       </div>
       
       <div class="card">
         <div class="card-body">
-          {{docData}}
+          <perguntasFormulario :docData="docData"/>
         </div>
       </div>
 
       <div class="pt-5 pl-1">
-        <b-button v-b-modal="'modal-prevent-closing'">Adicionar novo nível</b-button>
+        <b-button :disabled="Object.entries(docData).length != 0" v-b-modal="'modal-prevent-closing'">Adicionar novo nível</b-button>
         <button type="button" class="btn btn-secondary">Adicionar formulário</button>
         
         <b-modal
@@ -28,8 +29,8 @@
           id="modal-prevent-closing"
           @ok="adicionarNovoNivel"
         >
-          <b-form-input v-model="inputNivel" placeholder="Nível"></b-form-input>
-          <b-form-input v-model="inputNextNivel" placeholder="Próximo Nível"></b-form-input>
+          <b-form-input v-model="inputNivel" placeholder="Nível" required></b-form-input>
+          <b-form-input v-model="inputNextNivel" placeholder="Próximo Nível/Formulario" required></b-form-input>
         </b-modal>
 
       </div>
@@ -39,9 +40,12 @@
 
   import Vue from 'vue'
   import firebase from 'firebase'
-  import modal from '@/components/Modal.vue'
+  import perguntasFormulario from '@/components/perguntasFormulario.vue'
 
   export default {
+    components:{
+      perguntasFormulario
+    },
     data() {
       return {
         loading: false,
@@ -49,8 +53,8 @@
         db: firebase.firestore(),
         docData: {},
         collection: {
-          atual: 'Nivel1/',
-          pai: 'Nivel1/'
+          atual: 'Nivel1',
+          pai: 'Nivel1'
         },
         inputNivel: '',
         inputNextNivel: ''
@@ -68,66 +72,75 @@
       })
     },
     methods: {
-      clique(doc){
+      voltarInicio(){
         var instance = this
-                
+        this.loading = true
+        this.botoes = []
+        this.docData = {}
+        this.db.collection('Nivel1').get().then(function(querySnapshot){
+          instance.docAnterior = 'Nivel1/'
+          querySnapshot.docs.forEach(function(item){
+            instance.collection = item.data().collection
+            instance.botoes.push(item)
+            instance.loading = false
+          })
+        })
+      },
+      cliqueItem(doc){
+        var instance = this
         if (Object.entries(doc.data()).length === 1 && doc.data().hasOwnProperty("collection")){
-          this.loading = true
-          instance.botoes = []
-          instance.docData = {}
-          this.db.collection(doc.ref.path + '/Nivel').get().then(function(querySnapshot){           
-            querySnapshot.docs.forEach(function(item){
-              instance.collection = item.data().collection
-              console.log(instance.collection)
-              instance.botoes.push(item)
-              instance.loading = false
-            })
+          this.db.collection(doc.ref.path + '/Nivel').get().then(function(querySnapshot){
+            if (querySnapshot.docs.length !=0){
+              instance.loading = true
+              instance.botoes = []
+              instance.docData = {}
+              querySnapshot.docs.forEach(function(item){
+                instance.collection = item.data().collection
+                instance.botoes.push(item)
+                instance.loading = false
+              })
+            }
           })
         } else {
           this.collection = doc.data().collection
-          console.log(this.collection)
           this.docData = doc.data()
         }
 
       },
       voltar(){
-          
-        
-        if (this.collection.pai == 'Nivel1/' && this.collection.atual == 'Nivel1/'){
-          
-        } else {
           this.loading = true
           var instance = this
           this.botoes = []
           this.db.collection(this.collection.pai).get().then(function(querySnapshot){
             querySnapshot.docs.forEach(function(item){
               instance.collection = item.data().collection
-              console.log(instance.collection)
               instance.botoes.push(item)
               instance.loading = false
             })
-          })
-
-        }
-        
+          })        
       },
-      adicionarNovoNivel(){
+      async adicionarNovoNivel(){
 
         var instance = this
+        if (this.inputNivel.trim() == '' || this.inputNextNivel.trim() == ''){
+          return
+        }
 
-        this.db.collection(this.collection.atual)
+        await this.db.collection(this.collection.atual)
           .doc(instance.inputNivel)
           .set({
             collection: {
               pai: instance.collection.pai,
               atual: instance.collection.atual
             }
-          }).then(instance.adicionarDocDoNovoNivel())
-
-      },
-      adicionarDocDoNovoNivel(){
-
-        var instance = this
+          })
+        
+        await this.db.collection(this.collection.atual).get().then(await function(querySnapshot){
+          instance.botoes = []
+          querySnapshot.docs.forEach(function(item){
+                instance.botoes.push(item)
+              })
+        })
 
         this.db.collection(this.collection.atual)
         .doc(instance.inputNivel)
@@ -135,7 +148,7 @@
         .doc(instance.inputNextNivel)
         .set({
           collection: {
-              pai: instance.collection.pai + instance.inputNivel + '/Nivel',
+              pai: instance.collection.atual + '/',
               atual: instance.collection.atual + '/' + instance.inputNivel + '/Nivel'
             }
         })
