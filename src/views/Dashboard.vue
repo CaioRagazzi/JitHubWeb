@@ -14,16 +14,22 @@
 
       </div>
       
-      <div class="card">
+      <div class="card" v-if="isFormulario">
         <div class="card-body">
           <h1>Formulário</h1>
           <perguntasFormulario :docData="docData"/>
         </div>
       </div>
 
+      <div class="card" v-if="!isFormulario">
+        <div class="card-body">
+          <h1>teste</h1>
+        </div>
+      </div>
+
       <div class="pt-5 pl-1">
         <b-button :disabled="Object.entries(docData).length != 0" v-b-modal="'modal-prevent-closing'">Adicionar novo nível</b-button>
-        <button type="button" class="btn btn-secondary">Adicionar formulário</button>
+        <button type="button" class="btn btn-secondary" v-b-modal="'modal-prevent-closing2'">Adicionar formulário</button>
         
         <b-modal
           title="Entre com o nome do novo nível"
@@ -31,7 +37,14 @@
           @ok="adicionarNovoNivel"
         >
           <b-form-input v-model="inputNivel" placeholder="Nível" class="mb-2"></b-form-input>
-          <b-form-input v-model="inputNextNivel" placeholder="Próximo Nível/Formulario" ></b-form-input>
+        </b-modal>
+
+        <b-modal
+          title="Entre com o nome do novo formulário"
+          id="modal-prevent-closing2"
+          @ok="adicionarNovoForm"
+        >
+          <b-form-input v-model="inputForm" placeholder="Nome" class="mb-2"></b-form-input>
         </b-modal>
 
       </div>
@@ -49,27 +62,32 @@
     },
     data() {
       return {
-        reload: true,
         loading: false,
         botoes: [],
         db: firebase.firestore(),
         docData: {},
         collection: {
           atual: 'Nivel1',
-          pai: 'Nivel1'
+          pai: 'Nivel1',
+          tipo: 'nivel'
         },
         inputNivel: '',
-        inputNextNivel: ''
+        inputForm: '',
+        isFormulario: false
       };
     },
-    created(){
+    async created(){
       var instance = this
       this.loading = true
-      this.db.collection('Nivel1').get().then(function(querySnapshot){
+      await this.db.collection('Nivel1').get().then(await function(querySnapshot){
         instance.docAnterior = 'Nivel1/'
         querySnapshot.docs.forEach(function(item){
-          instance.botoes.push(item)
-          instance.loading = false
+          if (item.id === 'zero'){
+
+          } else {
+            instance.botoes.push(item)
+            instance.loading = false
+          }
         })
       })
     },
@@ -90,6 +108,7 @@
       },
       async cliqueItem(doc){
         var instance = this
+
         if (Object.entries(doc.data()).length === 1 && doc.data().hasOwnProperty("collection")){
           await this.db.collection(doc.ref.path + '/Nivel').onSnapshot(await function(querySnapshot){
             if (querySnapshot.docs.length !=0){
@@ -97,17 +116,30 @@
               instance.botoes = []
               instance.docData = {}
               querySnapshot.docs.forEach(function(item){
-                instance.collection = item.data().collection
-                instance.botoes.push(item)
-                instance.loading = false
+                if (item.id === 'zero'){
+                  instance.collection = item.data().collection
+                } else {
+                  instance.collection = item.data().collection
+                  instance.botoes.push(item)
+                  instance.loading = false
+                }
               })
+              instance.loading = false
             }
           })
         } else {
           this.collection = doc.data().collection
           this.docData = doc.data()
+          console.log(this.docData)
         }
 
+        var tipo = doc.data().collection.tipo
+        
+        if(tipo === 'formulario'){
+          this.isFormulario = true
+        } else if (tipo === 'nivel'){
+          this.isFormulario = false
+        }
       },
       voltar(){
           this.loading = true
@@ -115,16 +147,20 @@
           this.botoes = []
           this.db.collection(this.collection.pai).get().then(function(querySnapshot){
             querySnapshot.docs.forEach(function(item){
-              instance.collection = item.data().collection
-              instance.botoes.push(item)
-              instance.loading = false
+              if (item.id === 'zero'){
+                instance.collection = item.data().collection
+              } else {
+                instance.collection = item.data().collection
+                instance.botoes.push(item)
+                instance.loading = false
+              }
             })
           })        
       },
       async adicionarNovoNivel(){
 
         var instance = this
-        if (this.inputNivel.trim() == '' || this.inputNextNivel.trim() == ''){
+        if (this.inputNivel.trim() == ''){
           return
         }
 
@@ -134,35 +170,66 @@
             collection: {
               pai: instance.collection.pai,
               doc: instance.collection.atual + '/' + instance.inputNivel,
-              atual: instance.collection.atual
+              atual: instance.collection.atual,
+              tipo: 'nivel'
             }
           })
         
         await this.db.collection(this.collection.atual).get().then(await function(querySnapshot){
           instance.botoes = []
           querySnapshot.docs.forEach(function(item){
-                instance.botoes.push(item)
-              })
+            if (item.id === 'zero'){
+
+            } else {
+              instance.botoes.push(item)
+            }
+          })
         })
 
         this.db.collection(this.collection.atual)
         .doc(instance.inputNivel)
         .collection('Nivel')
-        .doc(instance.inputNextNivel)
+        .doc('zero')
         .set({
           collection: {
               pai: instance.collection.atual + '/',
               atual: instance.collection.atual + '/' + instance.inputNivel + '/Nivel',
-              doc: instance.collection.atual + '/' + instance.inputNivel + '/Nivel/' + instance.inputNextNivel
+              doc: instance.collection.atual + '/' + instance.inputNivel + '/Nivel/' + 'zero',
+              tipo: 'neutro'
             }
         })
+
+        this.inputNivel = ''
+        
       },
-      isDocDataEmpty() {
-        if (Object.entries(this.docData).length > 1){
-          return true
-        } else if (Object.entries(this.docData).length <= 1){
-          return false
+      async adicionarNovoForm(){
+        var instance = this
+        if (this.inputForm.trim() == ''){
+          return
         }
+
+        await this.db.collection(this.collection.atual)
+          .doc(instance.inputForm)
+          .set({
+            collection: {
+              pai: instance.collection.pai,
+              doc: instance.collection.atual + '/' + instance.inputForm,
+              atual: instance.collection.atual,
+              tipo: 'formulario'
+            }
+          })
+
+        await this.db.collection(this.collection.atual).get().then(await function(querySnapshot){
+          instance.botoes = []
+          querySnapshot.docs.forEach(function(item){
+            if (item.id === 'zero'){
+
+            } else {
+              instance.botoes.push(item)
+            }
+          })
+        })
+
       }
     }
 }

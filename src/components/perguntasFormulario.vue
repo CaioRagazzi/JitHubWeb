@@ -11,7 +11,20 @@
                 <h6 class="my-4">Tem certeza que deseja excluir a pergunta "{{ pergunta.reference.pergunta }}" </h6>
             </b-modal>
         </div>
-        <b-button variant="success">Adicionar nova pergunta</b-button>
+
+        <b-button variant="success" v-b-modal="'modal-add'">Adicionar nova pergunta</b-button>
+
+        <b-modal id="modal-add" centered title="Incluir Pergunta" @ok="adicionarPergunta">
+            <b-row class="mb-1">
+                <b-col cols="3">Header</b-col>
+                <b-col>
+                    <b-form-select
+                    v-model="perguntaSelecionada"
+                    :options="perguntasCombo"
+                    ></b-form-select>
+                </b-col>
+            </b-row>
+        </b-modal>
     </div>
 </template>
 
@@ -20,6 +33,14 @@
 import firebase from 'firebase'
 
 export default {
+    async created() {
+        var instance = this
+        await this.db.collection('Perguntas').onSnapshot(await function(querySnapshot){
+            querySnapshot.docs.forEach(function(item){
+                instance.perguntas.push(item.id)
+            })
+        })
+    },
     props: 
         ['docData']
     ,
@@ -34,9 +55,10 @@ export default {
             perguntas: [],
             db: firebase.firestore(),
             docD: {},
-            reload: true
+            perguntasCombo: [],
+            perguntaSelecionada: ''
         }
-    },
+    },    
     methods: {
         async listaPerguntas(){
             this.perguntas = []
@@ -64,6 +86,18 @@ export default {
                         [key]: firebase.firestore.FieldValue.delete()
                     })
                 }
+            }
+        },
+        adicionarPergunta(){
+            
+        }
+    },
+    computed:{
+        isDocDEmpty(){
+            if (Object.entries(this.docD).length == 0){
+                return true
+            } else {
+                return false
             }
         }
     }
