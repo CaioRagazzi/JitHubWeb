@@ -17,7 +17,7 @@
       <div class="card">
         <div class="card-body">
           <h1>Formulário</h1>
-          <perguntasFormulario :docData="docData" v-show="showPerguntas"/>
+          <perguntasFormulario :docData="docData"/>
         </div>
       </div>
 
@@ -49,7 +49,7 @@
     },
     data() {
       return {
-        showPerguntas: true,
+        reload: true,
         loading: false,
         botoes: [],
         db: firebase.firestore(),
@@ -91,8 +91,7 @@
       async cliqueItem(doc){
         var instance = this
         if (Object.entries(doc.data()).length === 1 && doc.data().hasOwnProperty("collection")){
-          this.showPerguntas = false
-          await this.db.collection(doc.ref.path + '/Nivel').get().then(await function(querySnapshot){
+          await this.db.collection(doc.ref.path + '/Nivel').onSnapshot(await function(querySnapshot){
             if (querySnapshot.docs.length !=0){
               instance.loading = true
               instance.botoes = []
@@ -105,7 +104,6 @@
             }
           })
         } else {
-          this.showPerguntas = true
           this.collection = doc.data().collection
           this.docData = doc.data()
         }
