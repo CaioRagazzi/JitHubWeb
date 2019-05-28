@@ -2,10 +2,10 @@
     <div>
         <div class="row" v-for="(pergunta, idx) in perguntas" :key="idx">
             <b-col lg="3" class="pb-2">
-                <h5 class="pr-3"> Pergunta: {{pergunta.pergunta}} </h5>
+                <h5 class="pr-3"> Pergunta: {{pergunta.reference.pergunta}} </h5>
             </b-col >
             <b-col lg="3" class="pb-2">
-                <b-button size="sm" class="btn btn-danger" v-b-tooltip.hover title="Ecluir pergunta" @click="excluirPergunta(pergunta)">X</b-button>
+                <b-button size="sm" class="btn btn-danger" v-b-tooltip.hover title="Exluir pergunta" @click="excluirPergunta(pergunta)">X</b-button>
             </b-col>
         </div>
         <b-button variant="success">Adicionar nova pergunta</b-button>
@@ -44,8 +44,11 @@ export default {
                 }
 
                 await this.db.doc(this.docData[key]).get().then(await function(querySnapshot){
-                    var a = querySnapshot.data()
-                    instance.perguntas.push(a)
+                    var referenceDoc = querySnapshot.data()
+                    instance.perguntas.push({
+                        reference: referenceDoc,
+                        string: instance.docData[key]
+                    })
                 })
             }
         },
@@ -54,8 +57,15 @@ export default {
             this.$nextTick(() => this.reload = true);
         },
         excluirPergunta(val){
-            console.log(val)
-            console.log(this.docD)
+            for (var key in this.docData){
+                if (this.docData[key] === val.string){
+                    
+                    var docRef = this.db.doc(this.docData.collection.doc)
+                    var removeCurrentPergunta = docRef.update({
+                        key: firebase.firestore.FieldValue.delete()
+                    })
+                }
+            }
         }
     }
 }

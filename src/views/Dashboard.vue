@@ -135,6 +135,7 @@
           .set({
             collection: {
               pai: instance.collection.pai,
+              doc: instance.collection.atual + '/' + instance.inputNivel,
               atual: instance.collection.atual
             }
           })
