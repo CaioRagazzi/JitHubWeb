@@ -35,19 +35,22 @@ import firebase from 'firebase'
 export default {
     async created() {
         var instance = this
-        await this.db.collection('Perguntas').onSnapshot(await function(querySnapshot){
+        await this.db.collection('Perguntas').get().then(await function(querySnapshot){
             querySnapshot.docs.forEach(function(item){
-                instance.perguntas.push(item.id)
+                instance.perguntasCombo.push(item.id)
             })
         })
     },
-    props: 
-        ['docData']
-    ,
+    props:{
+        docData: Object
+    },
     watch: {
-        docData: function(val) {
-            this.docD = val
-            this.listaPerguntas()
+            docData: {
+                immediate: true,
+                handler(valNew, valOld) {
+                this.docD = valNew
+                this.listaPerguntas()
+            }
         }
     },
     data() {
@@ -68,7 +71,7 @@ export default {
                     continue
                 }
 
-                await this.db.doc(this.docData[key]).onSnapshot(await function(querySnapshot){
+                await this.db.doc(this.docData[key]).get().then(await function(querySnapshot){
                     var referenceDoc = querySnapshot.data()
                     instance.perguntas.push({
                         reference: referenceDoc,
@@ -77,18 +80,32 @@ export default {
                 })
             }
         },
-        excluirPergunta(val){
+        async excluirPergunta(val){
             for (var key in this.docData){
                 if (this.docData[key] === val.string){
                     
-                    var docRef = this.db.doc(this.docData.collection.doc)
-                    var removeCurrentPergunta = docRef.update({
+                    // var docRef = this.db.doc(this.docData.collection.doc)
+                    await this.db.doc(this.docData.collection.doc).update({
                         [key]: firebase.firestore.FieldValue.delete()
                     })
                 }
             }
+            this.reloadPerguntas()
         },
         adicionarPergunta(){
+            
+        },
+        reloadPerguntas(){
+            this.perguntas = []
+            this.db.doc(this.docData.collection.doc).get().then(function(querySnapshot){
+                var referenceDoc = querySnapshot.data()
+                for (var key in referenceDoc){
+                    if (key == 'collection') {
+                        continue
+                    }
+                    console.log(key)
+                }
+            })
             
         }
     },

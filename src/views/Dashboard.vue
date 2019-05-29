@@ -110,7 +110,7 @@
         var instance = this
 
         if (Object.entries(doc.data()).length === 1 && doc.data().hasOwnProperty("collection")){
-          await this.db.collection(doc.ref.path + '/Nivel').onSnapshot(await function(querySnapshot){
+          await this.db.collection(doc.ref.path + '/Nivel').get().then(await function(querySnapshot){
             if (querySnapshot.docs.length !=0){
               instance.loading = true
               instance.botoes = []
@@ -130,7 +130,6 @@
         } else {
           this.collection = doc.data().collection
           this.docData = doc.data()
-          console.log(this.docData)
         }
 
         var tipo = doc.data().collection.tipo
