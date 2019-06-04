@@ -109,7 +109,7 @@
       async cliqueItem(doc){
         var instance = this
 
-        if (Object.entries(doc.data()).length === 1 && doc.data().hasOwnProperty("collection")){
+          if (doc.data().collection.tipo == "nivel"){
           await this.db.collection(doc.ref.path + '/Nivel').get().then(await function(querySnapshot){
             if (querySnapshot.docs.length !=0){
               instance.loading = true

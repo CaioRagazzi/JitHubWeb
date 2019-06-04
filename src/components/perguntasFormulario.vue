@@ -5,12 +5,13 @@
                 <h5 class="pr-3"> Pergunta: {{pergunta.reference.pergunta}} </h5>
             </b-col >
             <b-col lg="3" class="pb-2">
-                <b-button v-b-modal.modal-delete size="sm" class="btn btn-danger" v-b-tooltip.hover title="Exluir pergunta">X</b-button>
+                <b-button v-b-modal.modal-delete size="sm" @click="perguntaDeletar = pergunta" class="btn btn-danger" v-b-tooltip.hover title="Exluir pergunta">X</b-button>
             </b-col>
-            <b-modal id="modal-delete" centered title="Excluir" @ok="excluirPergunta(pergunta)">
-                <h6 class="my-4">Tem certeza que deseja excluir a pergunta "{{ pergunta.reference.pergunta }}" </h6>
-            </b-modal>
         </div>
+
+        <b-modal id="modal-delete" centered title="Excluir" @ok="excluirPergunta">
+            <h6 class="my-4">Tem certeza que deseja excluir a pergunta "{{ perguntaDeletar.reference.pergunta }}" ?</h6>
+        </b-modal>
 
         <b-button variant="success" v-b-modal="'modal-add'">Adicionar nova pergunta</b-button>
 
@@ -48,13 +49,20 @@ export default {
             docData: {
                 immediate: true,
                 handler(valNew, valOld) {
-                this.docD = valNew
+                this.docD = Object.assign({}, valNew)
                 this.listaPerguntas()
             }
         }
     },
     data() {
         return {
+            perguntaDeletar: {
+                reference: {
+                    pergunta: '',
+                    tipo: ''
+                },
+                string: ''
+            },
             perguntas: [],
             db: firebase.firestore(),
             docD: {},
@@ -64,49 +72,80 @@ export default {
     },    
     methods: {
         async listaPerguntas(){
+
             this.perguntas = []
             var instance = this
-            for (var key in this.docData){
+            for (var key in this.docD){
                 if (key == 'collection') {
                     continue
                 }
 
-                await this.db.doc(this.docData[key]).get().then(await function(querySnapshot){
+                await this.db.doc(this.docD[key]).get().then(await function(querySnapshot){
                     var referenceDoc = querySnapshot.data()
                     instance.perguntas.push({
                         reference: referenceDoc,
-                        string: instance.docData[key]
+                        string: instance.docD[key]
                     })
                 })
             }
+
         },
-        async excluirPergunta(val){
-            for (var key in this.docData){
-                if (this.docData[key] === val.string){
-                    
-                    // var docRef = this.db.doc(this.docData.collection.doc)
-                    await this.db.doc(this.docData.collection.doc).update({
-                        [key]: firebase.firestore.FieldValue.delete()
-                    })
-                }
-            }
-            this.reloadPerguntas()
-        },
-        adicionarPergunta(){
+        async excluirPergunta(){
+            var instance = this
             
+            this.db.doc(this.docData.collection.doc).get().then(function(querySnapshot){
+                var documentData = querySnapshot.data()
+
+                for (var key in documentData){
+                    if(instance.perguntaDeletar.string == documentData[key]){
+
+                        instance.db.doc(instance.docData.collection.doc).update({
+                            [key]: firebase.firestore.FieldValue.delete()
+                        })
+                    }
+                }
+            }).then(this.reloadPerguntas)
+        },
+        async adicionarPergunta(){
+            var d = new Date();
+            var m = d.getMinutes();
+            var s = d.getSeconds()
+            var stringPergunta = 'pergunta' + m + s
+            var stringPath
+
+            var perguntaRef = this.db.collection('Perguntas')
+
+            var query = await perguntaRef.where('pergunta', '==', this.perguntaSelecionada).get().then(await function(querySnapshot){
+                stringPath = querySnapshot.docs[0].ref.path
+            })
+
+            this.db.doc(this.docD.collection.doc).set({
+                [stringPergunta] : stringPath
+            }, {merge: true}).then(this.reloadPerguntas)
         },
         reloadPerguntas(){
+            var instance = this
             this.perguntas = []
-            this.db.doc(this.docData.collection.doc).get().then(function(querySnapshot){
-                var referenceDoc = querySnapshot.data()
-                for (var key in referenceDoc){
-                    if (key == 'collection') {
+            
+            this.db.doc(this.docD.collection.doc).get().then(function(querySnapshot){
+                var docNew = querySnapshot.data()
+                instance.docD = docNew
+
+                for(var key in docNew){
+                    if (key == 'collection'){
                         continue
                     }
-                    console.log(key)
+
+                    instance.db.doc(docNew[key]).get().then(function(querySnapshot){
+                        var referenceDoc = querySnapshot.data()
+                        instance.perguntas.push({
+                            reference: referenceDoc,
+                            string: instance.docD[key]
+                        })
+                    })
+
                 }
             })
-            
         }
     },
     computed:{
