@@ -92,13 +92,13 @@ export default {
         },
         async excluirPergunta(){
             var instance = this
-            
+            console.log(this.docD)
             this.db.doc(this.docData.collection.doc).get().then(function(querySnapshot){
                 var documentData = querySnapshot.data()
 
                 for (var key in documentData){
                     if(instance.perguntaDeletar.string == documentData[key]){
-
+                        console.log(key, documentData[key])
                         instance.db.doc(instance.docData.collection.doc).update({
                             [key]: firebase.firestore.FieldValue.delete()
                         })
