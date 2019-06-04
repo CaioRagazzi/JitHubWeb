@@ -73,9 +73,6 @@ export default {
     methods: {
         atribuirPergunta(val){
             this.perguntaDeletar = val
-            console.log(this.perguntaDeletar)
-            console.log(this.docD)
-            console.log(this.perguntas)
         },
         async listaPerguntas(){
 
@@ -98,13 +95,13 @@ export default {
         },
         async excluirPergunta(){
             var instance = this
-            console.log(this.perguntaDeletar)
+            
             this.db.doc(this.docD.collection.doc).get().then(function(querySnapshot){
                 var documentData = querySnapshot.data()
 
                 for (var key in documentData){
                     if(instance.perguntaDeletar.string == documentData[key]){
-                        console.log(key, documentData[key])
+                        
                         instance.db.doc(instance.docD.collection.doc).update({
                             [key]: firebase.firestore.FieldValue.delete()
                         })
