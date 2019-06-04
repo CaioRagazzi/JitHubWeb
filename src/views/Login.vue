@@ -59,6 +59,7 @@ export default {
             console.log('logando')
             firebase.auth().signInWithEmailAndPassword(usuario, this.senha).then(
                 (user) => {
+                    localStorage.user = user
                     this.$router.replace('dashboard')
                 },
                 (err) => {

@@ -5,7 +5,7 @@
                 <h5 class="pr-3"> Pergunta: {{pergunta.reference.pergunta}} </h5>
             </b-col >
             <b-col lg="3" class="pb-2">
-                <b-button v-b-modal.modal-delete size="sm" @click="perguntaDeletar = pergunta" class="btn btn-danger" v-b-tooltip.hover title="Exluir pergunta">X</b-button>
+                <b-button v-b-modal.modal-delete size="sm" @click="atribuirPergunta(pergunta)" class="btn btn-danger" v-b-tooltip.hover title="Exluir pergunta">X</b-button>
             </b-col>
         </div>
 
@@ -71,6 +71,12 @@ export default {
         }
     },    
     methods: {
+        atribuirPergunta(val){
+            this.perguntaDeletar = val
+            console.log(this.perguntaDeletar)
+            console.log(this.docD)
+            console.log(this.perguntas)
+        },
         async listaPerguntas(){
 
             this.perguntas = []
@@ -92,14 +98,14 @@ export default {
         },
         async excluirPergunta(){
             var instance = this
-            console.log(this.docD)
-            this.db.doc(this.docData.collection.doc).get().then(function(querySnapshot){
+            console.log(this.perguntaDeletar)
+            this.db.doc(this.docD.collection.doc).get().then(function(querySnapshot){
                 var documentData = querySnapshot.data()
 
                 for (var key in documentData){
                     if(instance.perguntaDeletar.string == documentData[key]){
                         console.log(key, documentData[key])
-                        instance.db.doc(instance.docData.collection.doc).update({
+                        instance.db.doc(instance.docD.collection.doc).update({
                             [key]: firebase.firestore.FieldValue.delete()
                         })
                     }
@@ -123,11 +129,11 @@ export default {
                 [stringPergunta] : stringPath
             }, {merge: true}).then(this.reloadPerguntas)
         },
-        reloadPerguntas(){
+        async reloadPerguntas(){
             var instance = this
             this.perguntas = []
             
-            this.db.doc(this.docD.collection.doc).get().then(function(querySnapshot){
+            await this.db.doc(this.docD.collection.doc).get().then(async function(querySnapshot){
                 var docNew = querySnapshot.data()
                 instance.docD = docNew
 
@@ -136,7 +142,7 @@ export default {
                         continue
                     }
 
-                    instance.db.doc(docNew[key]).get().then(function(querySnapshot){
+                    await instance.db.doc(docNew[key]).get().then(await function(querySnapshot){
                         var referenceDoc = querySnapshot.data()
                         instance.perguntas.push({
                             reference: referenceDoc,
