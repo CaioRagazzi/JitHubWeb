@@ -1,6 +1,7 @@
 <template>
     <div>
-        <b-table/>
+        <h1>Selecione os níveis desejados</h1>
+            <b-form-select v-model="itemSelecionado" :options="getIds"></b-form-select>
     </div>
 </template>
 
@@ -10,12 +11,49 @@ import firebase from 'firebase'
 export default {
     data(){
         return {
-            db: firebase.firestore()
+            db: firebase.firestore(),
+            docs: [],
+            itemSelecionado: '',
+            itemsNivel: []
         }
     },
-    created(){
-        this.db.collection('Respostas').get().then(function(querySnapshot){
-            console.log(querySnapshot)
+    watch: {
+        itemSelecionado: async function(val){
+            var newDocs = this.docs.filter(function(item){
+                if (item.id == val){
+                    return item
+                }
+            })
+
+            console.log(newDocs)
+
+            var instance = this
+
+            await this.db.collection(newDocs[0].ref.path + '/Nivel').where('collection.tipo', '==', 'nivel').get().then(function(querySnapshot){
+                querySnapshot.docs.forEach(function(item){
+                    instance.itemsNivel.push(item)
+                })
+            })
+            console.log(this.itemsNivel)
+        }
+    },
+    computed:{
+        getIds(){
+            var retorno = []
+            this.docs.forEach(a => retorno.push(a.id))
+            return retorno
+        },
+        opcoes(){
+            var array= []
+            this.docs.forEach(a => array.push(a.id))
+            return array
+        }
+    },
+    async created(){
+        var instance = this
+
+        await this.db.collection('Nivel1').where('collection.tipo', '==','nivel').get().then(function(querySnapshot){
+            querySnapshot.docs.forEach(a => instance.docs.push(a))
         })
     }
 }
@@ -24,5 +62,3 @@ export default {
 <style>
 
 </style>
-
-
