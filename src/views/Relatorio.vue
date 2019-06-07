@@ -25,8 +25,6 @@ export default {
                 }
             })
 
-            console.log(newDocs)
-
             var instance = this
 
             await this.db.collection(newDocs[0].ref.path + '/Nivel').where('collection.tipo', '==', 'nivel').get().then(function(querySnapshot){
@@ -34,7 +32,6 @@ export default {
                     instance.itemsNivel.push(item)
                 })
             })
-            console.log(this.itemsNivel)
         }
     },
     computed:{
