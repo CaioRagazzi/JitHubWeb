@@ -17,7 +17,7 @@
 
         <b-modal id="modal-add" centered title="Incluir Pergunta" @ok="adicionarPergunta">
             <b-row class="mb-1">
-                <b-col cols="3">Header</b-col>
+                <b-col cols="3">Pergunta</b-col>
                 <b-col>
                     <b-form-select
                     v-model="perguntaSelecionada"

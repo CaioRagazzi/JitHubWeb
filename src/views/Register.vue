@@ -1,109 +1,87 @@
 <template>
-    <div class="row justify-content-center">
-        <div class="col-lg-5 col-md-7">
-            <div class="card bg-secondary shadow border-0">
-                <!--<div class="card-header bg-transparent pb-5">
-                    <div class="text-muted text-center mt-2 mb-3">
-                        <small>Sign up with</small>
-                    </div>
-                    <div class="btn-wrapper text-center">
-                        <a href="#" class="btn btn-neutral btn-icon">
-                            <span class="btn-inner--icon"><img src="img/icons/common/github.svg"></span>
-                            <span class="btn-inner--text">Github</span>
-                        </a>
-                        <a href="#" class="btn btn-neutral btn-icon">
-                            <span class="btn-inner--icon"><img src="img/icons/common/google.svg"></span>
-                            <span class="btn-inner--text">Google</span>
-                        </a>
-                    </div>
-                </div>-->
-                <div class="card-body px-lg-5 py-lg-5">
-                    <div class="text-center text-muted mb-4">
-                        <small>Insira as informações</small>
-                    </div>
-                    <form role="form">
+  <div>
+    <div class="card m-4">
+      <div class="card-body">
+        <b-form class="container">
+          <b-form-group
+            id="fieldset-1"
+            description="Insira o CPF."
+            label="Login:"
+            label-for="input-1"
+          >
+            <b-form-input style="width:300px;" id="input-1" v-model="model.name" trim></b-form-input>
+          </b-form-group>
 
-                        <base-input class="input-group-alternative mb-3"
-                                    placeholder="CPF"
-                                    addon-left-icon="ni ni-hat-3"
-                                    v-model="model.name">
-                        </base-input>
-
-                        <!--<base-input class="input-group-alternative mb-3"
-                                    placeholder="Email"
-                                    addon-left-icon="ni ni-email-83"
-                                    v-model="model.email">
-                        </base-input>-->
-
-                        <base-input class="input-group-alternative"
-                                    placeholder="Senha"
-                                    type="password"
-                                    addon-left-icon="ni ni-lock-circle-open"
-                                    v-model="model.password">
-                        </base-input>
-
-                        <!--<div class="text-muted font-italic">
-                            <small>password strength: <span class="text-success font-weight-700">strong</span></small>
-                        </div>
-
-                        <div class="row my-4">
-                            <div class="col-12">
-                                <base-checkbox class="custom-control-alternative">
-                                    <span class="text-muted">I agree with the <a href="#!">Privacy Policy</a></span>
-                                </base-checkbox>
-                            </div>
-                        </div>-->
-                        <div class="text-center">
-                            <base-button v-on:click="criarNovaConta" type="primary" class="my-4">Criar conta</base-button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <!--<div class="row mt-3">
-                <div class="col-6">
-                    <a href="#" class="text-light">
-                        <small>Forgot password?</small>
-                    </a>
-                </div>
-                <div class="col-6 text-right">
-                    <router-link to="/login" class="text-light">
-                        <small>Login into your account</small>
-                    </router-link>
-                </div>
-            </div>-->
-        </div>
+          <b-form-group id="fieldset-2" label="Senha" label-for="input-2">
+            <b-form-input style="width:300px;" id="input-2" type="password" v-model="model.senha" trim></b-form-input>
+          </b-form-group>
+          <b-form-group>
+            <b-button @click="criarNovaConta" variant="primary">Cadastrar</b-button>
+          </b-form-group>
+        </b-form>
+      </div>
     </div>
+
+    <div class="p-4 pt-1">
+      <b-table striped hover :items="users" class="mt-5"></b-table>
+    </div>
+  </div>
 </template>
 <script>
-import firebase from 'firebase'
+import firebase from "firebase";
 
-  export default {
-    name: 'register',
-    data() {
-      return {
-        model: {
-          name: '',
-          password: ''
-        }
-      }
+export default {
+  name: "register",
+  data() {
+    return {
+      db: firebase.firestore(),
+      model: {
+        name: "",
+        senha: ""
+      },
+      users: []
+    };
+  },
+  created() {
+    this.getAllUsers();
+  },
+  methods: {
+    criarNovaConta() {
+      let usuario = this.model.name + "@dominio.com.br";
+
+      firebase
+        .auth()
+        .createUserWithEmailAndPassword(usuario, this.model.senha)
+        .then(
+          function(user) {
+            alert("Conta criada com sucesso!");
+          },
+          function(error) {
+            // Handle Errors here.
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            alert(errorMessage);
+          }
+        );
+
+      this.db
+        .collection("Usuarios")
+        .doc()
+        .set(this.model);
+
+      this.model.name = "";
+      this.model.senha = "";
     },
-    methods: {
-        criarNovaConta(){
-            let usuario = this.model.name + '@dominio.com.br'
-
-            console.log('criando nova conta')
-            firebase.auth().createUserWithEmailAndPassword(usuario, this.model.password).then(function(user) {
-                alert('Conta criada com sucesso!')
-            }, function(error) {
-                // Handle Errors here.
-                var errorCode = error.code;
-                var errorMessage = error.message;
-                alert(errorMessage)
-            });
-
-        }    
+    getAllUsers() {
+      var instance = this;
+      this.db.collection("Usuarios").onSnapshot(function(querySnapshot) {
+        querySnapshot.forEach(function(docs) {
+          instance.users.push(docs.data());
+        });
+      });
     }
   }
+};
 </script>
 <style>
 </style>
