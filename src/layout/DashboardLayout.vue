@@ -21,6 +21,7 @@
         <sidebar-item :link="{name: 'Relatório', icon: 'ni ni-key-25 text-info', path: '/respostas'}"/>
         <sidebar-item :link="{name: 'Perguntas', icon: 'ni ni-planet text-blue', path: '/perguntas'}"/>
         <sidebar-item :link="{name: 'Criar nova conta', icon: 'ni ni-circle-08 text-pink', path: '/register'}"/>
+        <sidebar-item :link="{name: 'Inventario teste', icon: 'ni ni-circle-08 text-pink', path: '/inventario'}"/>
 
       </template>
     </side-bar>

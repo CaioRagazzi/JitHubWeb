@@ -72,6 +72,11 @@ const router = new Router({
           path: '/respostas',
           name: 'respostas',
           component: () => import(/* webpackChunkName: "demo" */ './views/Relatorio.vue')
+        },
+        {
+          path: '/inventario',
+          name: 'inventario',
+          component: () => import(/* webpackChunkName: "demo" */ './views/Inventario.vue')
         }
       ]
     },
