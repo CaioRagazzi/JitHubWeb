@@ -31,8 +31,7 @@ export default {
       if (document.data().collection.tipo == "nivel") {
           return {
               nome: document.id,
-              children: [
-              ]
+              children: 
           }
       } else if (document.data().collection.tipo == "formulario") {
         var obj = {
