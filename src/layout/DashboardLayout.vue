@@ -14,10 +14,6 @@
           }"
         />
 
-        <!--<sidebar-item :link="{name: 'Icons', icon: 'ni ni-planet text-blue', path: '/icons'}"/>
-        <sidebar-item :link="{name: 'Maps', icon: 'ni ni-pin-3 text-orange', path: '/maps'}"/>
-        <sidebar-item :link="{name: 'User Profile', icon: 'ni ni-single-02 text-yellow', path: '/profile'}"/>
-        <sidebar-item :link="{name: 'Tables', icon: 'ni ni-bullet-list-67 text-red', path: '/tables'}"/> -->
         <sidebar-item :link="{name: 'Relatório', icon: 'ni ni-key-25 text-info', path: '/respostas'}"/>
         <sidebar-item :link="{name: 'Perguntas', icon: 'ni ni-planet text-blue', path: '/perguntas'}"/>
         <sidebar-item :link="{name: 'Criar nova conta', icon: 'ni ni-circle-08 text-pink', path: '/register'}"/>
@@ -26,14 +22,13 @@
       </template>
     </side-bar>
     <div class="main-content" :data="sidebarBackground">
-      <dashboard-navbar></dashboard-navbar>
-
+      <!-- <dashboard-navbar></dashboard-navbar> -->
       <div @click="toggleSidebar">
         <fade-transition :duration="200" origin="center top" mode="out-in">
           <!-- your content here -->
           <router-view></router-view>
         </fade-transition>
-        <!--<content-footer v-if="!$route.meta.hideFooter"></content-footer>-->
+        <!-- <content-footer v-if="!$route.meta.hideFooter"></content-footer> -->
       </div>
     </div>
   </div>

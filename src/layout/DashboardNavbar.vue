@@ -1,6 +1,5 @@
 <template>
-<div></div>
-<!--     <base-nav class="navbar-top navbar-dark"
+    <base-nav class="navbar-top navbar-dark"
               id="navbar-main"
               :show-toggle-button="false"
               expand>
@@ -45,14 +44,16 @@
                             <i class="ni ni-support-16"></i>
                             <span>Support</span>
                         </router-link>
-                        <div class="dropdown-divider"></div>                        
-                        
+                        <div class="dropdown-divider"></div>
+                        <router-link to="/profile" class="dropdown-item">
+                            <i class="ni ni-user-run"></i>
+                            <span>Logout</span>
+                        </router-link>
                     </template>
                 </base-dropdown>
             </li>
         </ul>
     </base-nav>
-    </div> -->
 </template>
 <script>
   export default {
@@ -72,12 +73,7 @@
       },
       toggleMenu() {
         this.showMenu = !this.showMenu;
-      },
-      logout: function() {
-      firebase.auth().signOut().then(() => {
-        this.$router.replace('login')
-      })
-    }
+      }
     }
   };
 </script>
