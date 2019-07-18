@@ -69,7 +69,7 @@ export default {
             perguntasCombo: [],
             perguntaSelecionada: ''
         }
-    },    
+    },
     methods: {
         atribuirPergunta(val){
             this.perguntaDeletar = val
@@ -117,11 +117,13 @@ export default {
             var stringPath
 
             var perguntaRef = this.db.collection('Perguntas')
-
+            console.log(this.perguntaSelecionada);
+            
             var query = await perguntaRef.where('pergunta', '==', this.perguntaSelecionada).get().then(await function(querySnapshot){
                 stringPath = querySnapshot.docs[0].ref.path
             })
-
+            console.log(this.docD);
+            
             this.db.doc(this.docD.collection.doc).set({
                 [stringPergunta] : stringPath
             }, {merge: true}).then(this.reloadPerguntas)

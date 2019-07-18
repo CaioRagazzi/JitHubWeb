@@ -1,8 +1,7 @@
 <template>
   <div>
     <div class="card mb-1 mt-2">
-
-      <v-treeview expand-icon="" item-key="name" :items="arvore" open-on-click>
+      <v-treeview expand-icon item-key="name" :items="arvore" open-on-click>
         <template slot="prepend" slot-scope="{ item }">
           <a>{{ item.collection.tipo == "nivel" ? ">" : "o" }}</a>
         </template>
@@ -12,23 +11,27 @@
           </div>
         </template>
       </v-treeview>
-<!-- <pre> {{ arvore }} </pre> -->
     </div>
     <div class="card" v-if="itemOrForm">
       <div class="card-body">
         <h1>Formulário</h1>
+        <h2> {{ itemAtual.name }} </h2>
         <perguntasFormulario :docData="docData" />
       </div>
     </div>
     <div class="card" v-if="!itemOrForm">
-      <h1> {{ itemAtual.name }} </h1>
+      <h1>{{ itemAtual.name }}</h1>
       <div class="pt-5 pl-1">
-        <b-button :disabled="checkObjectEmpty(itemAtual)"  v-b-modal="'modal-prevent-closing'">Adicionar novo nível</b-button>
-        <!-- <button
-          type="button"
-          class="btn btn-secondary"
+        <b-button
+          variant="primary"
+          :disabled="checkObjectEmpty(itemAtual)"
+          v-b-modal="'modal-prevent-closing'"
+        >Adicionar novo nível</b-button>
+        <b-button
+          variant="primary"
+          :disabled="checkObjectEmpty(itemAtual)"
           v-b-modal="'modal-prevent-closing2'"
-        >Adicionar formulário</button> -->
+        >Adicionar formulário</b-button>
 
         <b-modal
           title="Entre com o nome do novo nível"
@@ -38,13 +41,13 @@
           <b-form-input v-model="inputNivel" placeholder="Nível" class="mb-2"></b-form-input>
         </b-modal>
 
-        <!-- <b-modal
+        <b-modal
           title="Entre com o nome do novo formulário"
           id="modal-prevent-closing2"
           @ok="adicionarNovoForm"
         >
           <b-form-input v-model="inputForm" placeholder="Nome" class="mb-2"></b-form-input>
-        </b-modal>-->
+        </b-modal>
       </div>
     </div>
   </div>
@@ -69,6 +72,7 @@ export default {
     itemAtual: {},
     inputNivel: "",
     inputForm: "",
+    inputForm: "",
     collection: {
       atual: "Nivel1",
       pai: "Nivel1",
@@ -79,27 +83,25 @@ export default {
     this.criaArvore("Nivel1");
   },
   methods: {
-    checkObjectEmpty(itemAtual){
-      if (Object.entries(itemAtual).length === 0){
-        return true
-      } else if (Object.entries(itemAtual).length !== 0){
-        return false
+    checkObjectEmpty(itemAtual) {
+      if (Object.entries(itemAtual).length === 0) {
+        return true;
+      } else if (Object.entries(itemAtual).length !== 0) {
+        return false;
       }
     },
     openDialog(item) {
+      var instance = this
       this.itemAtual = item;
       this.collection = item.collection;
-
-      console.log(this.collection);
-      console.log(this.itemAtual);
-
+      console.log(item)
       if (item.collection.tipo == "formulario") {
         this.itemOrForm = true;
         this.db
           .doc(item.collection.doc)
           .get()
-          .then(a => {
-            this.docData = a.data();
+          .then(function(a){
+            instance.docData = a.data();
           });
       } else if (item.collection.tipo == "nivel") {
         this.itemOrForm = false;
@@ -206,6 +208,24 @@ export default {
         });
 
       this.inputNivel = "";
+    },
+    async adicionarNovoForm() {
+      var instance = this;
+      if (this.inputForm.trim() == "") {
+        return;
+      }
+
+      await this.db
+        .collection(this.collection.doc + "/Nivel")
+        .doc(instance.inputForm)
+        .set({
+          collection: {
+            pai: instance.collection.doc,
+            doc: instance.collection.doc + "/Nivel/" + instance.inputForm,
+            atual: instance.collection.doc + "/Nivel/",
+            tipo: "formulario"
+          }
+        });
     }
   }
 };

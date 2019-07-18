@@ -10,14 +10,23 @@
           :link="{
             name: 'Listagem Inventário',
             icon: 'ni ni-tv-2 text-primary',
-            path: '/dashboard'
+            path: '/inventario'
           }"
         />
 
         <sidebar-item :link="{name: 'Relatório', icon: 'ni ni-key-25 text-info', path: '/respostas'}"/>
         <sidebar-item :link="{name: 'Perguntas', icon: 'ni ni-planet text-blue', path: '/perguntas'}"/>
         <sidebar-item :link="{name: 'Criar nova conta', icon: 'ni ni-circle-08 text-pink', path: '/register'}"/>
-        <sidebar-item :link="{name: 'Inventario teste', icon: 'ni ni-circle-08 text-pink', path: '/inventario'}"/>
+        <li class="nav-item">
+          <a style="cursor: pointer;" class="nav-link" @click="deslogar">
+              <template>
+                  <i class="ni ni-button-power text-pink"></i>
+                  <a class="nav-link-text">Sair</a>
+              </template>
+          </a>
+        </li>
+        <!-- <sidebar-item :link="{name: 'Criar nova conta', icon: 'ni ni-circle-08 text-pink', path: '/register'}"/> -->
+        <!-- <sidebar-item :link="{name: 'Inventario teste', icon: 'ni ni-circle-08 text-pink', path: '/inventario'}"/> -->
 
       </template>
     </side-bar>
@@ -37,6 +46,7 @@
   import DashboardNavbar from './DashboardNavbar.vue';
   import ContentFooter from './ContentFooter.vue';
   import { FadeTransition } from 'vue2-transitions';
+  import firebase from 'firebase'
 
   export default {
     components: {
@@ -50,6 +60,14 @@
       };
     },
     methods: {
+      deslogar(){
+        var instance = this
+        firebase.auth().signOut().then(function() {
+          instance.$router.replace('login')
+        }, function(error) {
+          console.log(error);
+        });
+      },
       toggleSidebar() {
         if (this.$sidebar.showSidebar) {
           this.$sidebar.displaySidebar(false);
