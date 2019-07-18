@@ -1,11 +1,18 @@
 <template>
   <div>
     <div class="card mb-1 mt-2">
-      <v-treeview item-key="name" :items="arvore" v-model="selectedItems" open-on-click>
+
+      <v-treeview expand-icon="" item-key="name" :items="arvore" open-on-click>
+        <template slot="prepend" slot-scope="{ item }">
+          <a>{{ item.collection.tipo == "nivel" ? ">" : "o" }}</a>
+        </template>
         <template slot="label" slot-scope="{ item }">
-          <a @click="openDialog(item)">{{ item.name }}</a>
+          <div @click="openDialog(item)">
+            <a>{{ item.name }}</a>
+          </div>
         </template>
       </v-treeview>
+<!-- <pre> {{ arvore }} </pre> -->
     </div>
     <div class="card" v-if="itemOrForm">
       <div class="card-body">
@@ -14,13 +21,14 @@
       </div>
     </div>
     <div class="card" v-if="!itemOrForm">
+      <h1> {{ itemAtual.name }} </h1>
       <div class="pt-5 pl-1">
-        <b-button v-b-modal="'modal-prevent-closing'">Adicionar novo nível</b-button>
-        <button
+        <b-button :disabled="checkObjectEmpty(itemAtual)"  v-b-modal="'modal-prevent-closing'">Adicionar novo nível</b-button>
+        <!-- <button
           type="button"
           class="btn btn-secondary"
           v-b-modal="'modal-prevent-closing2'"
-        >Adicionar formulário</button>
+        >Adicionar formulário</button> -->
 
         <b-modal
           title="Entre com o nome do novo nível"
@@ -52,10 +60,10 @@ export default {
     perguntasFormulario
   },
   data: () => ({
+    arr: [],
     db: firebase.firestore(),
     arvore: [],
     id: 1,
-    selectedItems: [],
     docData: {},
     itemOrForm: false,
     itemAtual: {},
@@ -69,13 +77,20 @@ export default {
   }),
   created() {
     this.criaArvore("Nivel1");
-    console.log(this.arvore);
   },
   methods: {
+    checkObjectEmpty(itemAtual){
+      if (Object.entries(itemAtual).length === 0){
+        return true
+      } else if (Object.entries(itemAtual).length !== 0){
+        return false
+      }
+    },
     openDialog(item) {
       this.itemAtual = item;
       this.collection = item.collection;
 
+      console.log(this.collection);
       console.log(this.itemAtual);
 
       if (item.collection.tipo == "formulario") {
@@ -159,19 +174,19 @@ export default {
       }
 
       await this.db
-        .collection(this.collection.atual)
+        .collection(this.collection.doc + "/Nivel")
         .doc(instance.inputNivel)
         .set({
           collection: {
-            pai: instance.collection.pai,
-            doc: instance.collection.atual + "/" + instance.inputNivel,
-            atual: instance.collection.atual,
+            pai: instance.collection.doc,
+            doc: instance.collection.doc + "/Nivel/" + instance.inputNivel,
+            atual: instance.collection.doc + "/Nivel/",
             tipo: "nivel"
           }
         });
 
       this.db
-        .collection(this.collection.atual)
+        .collection(this.collection.doc + "/Nivel")
         .doc(instance.inputNivel)
         .collection("Nivel")
         .doc("zero")
