@@ -27,7 +27,7 @@
                             </base-input>
 
                             <div class="text-center">
-                                <base-button v-on:click="logar" type="primary" class="my-4">Sign in</base-button>
+                                <base-button v-on:click="logar" type="primary" class="my-4">Entrar</base-button>
                             </div>
                     </div>
                 </div>
