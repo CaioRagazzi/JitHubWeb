@@ -4,7 +4,7 @@
     <div class="card">
       <div class="card-body">
         <h2>Inventário</h2>
-        <v-treeview expand-icon item-key="name" :items="arvore" open-on-click>
+        <v-treeview expand-icon item-key="id" :items="arvore" open-on-click>
           <template slot="prepend" slot-scope="{ item }">
             <a>{{ item.collection.tipo == "nivel" ? ">" : "o" }}</a>
           </template>
