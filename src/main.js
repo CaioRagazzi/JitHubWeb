@@ -11,6 +11,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import 'vuetify/dist/vuetify.min.css'
 import Vuetify from 'vuetify'
+import 'izitoast/dist/css/iziToast.min.css';
 
 Vue.use(Vuetify)
 
