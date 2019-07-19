@@ -1,25 +1,31 @@
 <template>
   <div>
-    <div class="card mb-1 mt-2">
-      <v-treeview expand-icon item-key="name" :items="arvore" open-on-click>
-        <template slot="prepend" slot-scope="{ item }">
-          <a>{{ item.collection.tipo == "nivel" ? ">" : "o" }}</a>
-        </template>
-        <template slot="label" slot-scope="{ item }">
-          <div @click="openDialog(item)">
-            <a>{{ item.name }}</a>
-          </div>
-        </template>
-      </v-treeview>
+    <h1>Listagem</h1>
+    <div class="card">
+      <div class="card-body">
+        <h2>Inventário</h2>
+        <v-treeview expand-icon item-key="name" :items="arvore" open-on-click>
+          <template slot="prepend" slot-scope="{ item }">
+            <a>{{ item.collection.tipo == "nivel" ? ">" : "o" }}</a>
+          </template>
+          <template slot="label" slot-scope="{ item }">
+            <div @click="openDialog(item)">
+              <a>{{ item.name }}</a>
+            </div>
+          </template>
+        </v-treeview>
+      </div>
     </div>
-    <div class="card" v-if="itemOrForm">
+
+    <div class="card mt-5" v-if="itemOrForm">
       <div class="card-body">
         <h1>Formulário</h1>
-        <h2> {{ itemAtual.name }} </h2>
+        <h2>{{ itemAtual.name }}</h2>
         <perguntasFormulario :docData="docData" />
       </div>
     </div>
-    <div class="card" v-if="!itemOrForm">
+    <div class="card mt-5" v-if="!itemOrForm">
+      <div class="card-body">
       <h1>{{ itemAtual.name }}</h1>
       <div class="pt-5 pl-1">
         <b-button
@@ -50,6 +56,7 @@
         </b-modal>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
@@ -63,7 +70,6 @@ export default {
     perguntasFormulario
   },
   data: () => ({
-    arr: [],
     db: firebase.firestore(),
     arvore: [],
     id: 1,
@@ -91,16 +97,16 @@ export default {
       }
     },
     openDialog(item) {
-      var instance = this
+      var instance = this;
       this.itemAtual = item;
       this.collection = item.collection;
-      console.log(item)
+      console.log(item);
       if (item.collection.tipo == "formulario") {
         this.itemOrForm = true;
         this.db
           .doc(item.collection.doc)
           .get()
-          .then(function(a){
+          .then(function(a) {
             instance.docData = a.data();
           });
       } else if (item.collection.tipo == "nivel") {
@@ -108,6 +114,7 @@ export default {
       }
     },
     criaArvore(collection) {
+      this.arvore = [];
       this.db
         .collection(collection)
         .get()
@@ -206,7 +213,7 @@ export default {
             tipo: "neutro"
           }
         });
-
+      this.criaArvore("Nivel1");
       this.inputNivel = "";
     },
     async adicionarNovoForm() {

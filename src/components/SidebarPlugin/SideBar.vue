@@ -10,7 +10,7 @@
                 <img :src="logo" class="navbar-brand-img" alt="...">
             </router-link>
 
-            <slot name="mobile-right">
+            <!-- <slot name="mobile-right">
                 <ul class="nav align-items-center d-md-none">
                     <base-dropdown class="nav-item" position="right">
                         <a slot="title" class="nav-link nav-link-icon" href="#" role="button" data-toggle="dropdown"
@@ -37,7 +37,7 @@
                         </div>
                         <router-link to="/profile" class="dropdown-item">
                             <i class="ni ni-single-02"></i>
-                            <span>My profile</span>
+                            <span>My profilel</span>
                         </router-link>
                         <router-link to="/profile" class="dropdown-item">
                             <i class="ni ni-settings-gear-65"></i>
@@ -58,7 +58,7 @@
                         </a>
                     </base-dropdown>
                 </ul>
-            </slot>
+            </slot> -->
             <slot></slot>
             <div v-show="$sidebar.showSidebar" class="navbar-collapse collapse show" id="sidenav-collapse-main">
 
