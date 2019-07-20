@@ -33,7 +33,6 @@
           </b-form-group>
           <b-form-group>
             <b-button @click="criarNovaConta" variant="primary">Criar</b-button>
-            <b-button variant="danger" @click="model = {}">Limpar</b-button>
           </b-form-group>
         </b-form>
       </div>
@@ -78,7 +77,8 @@ export default {
       var retorno = Boolean;
       await this.db
         .collection("Usuarios")
-        .where("cpf", "==", this.model.cpf).get()
+        .where("cpf", "==", this.model.cpf)
+        .get()
         .then(a => {
           retorno = a.empty;
         });
@@ -86,6 +86,8 @@ export default {
       return retorno;
     },
     async criarNovaConta() {
+      var instance = this;
+
       if (this.validationCpf == false || this.validationSenha == false) {
         iziToast.warning({
           title: "Atenção",
@@ -94,8 +96,8 @@ export default {
         });
         return;
       }
-      var resposta = await this.validaSeUsuarioJaExiste()
-      
+      var resposta = await this.validaSeUsuarioJaExiste();
+
       if (resposta == true) {
         let usuario = this.model.cpf + "@dominio.com.br";
 
@@ -104,20 +106,31 @@ export default {
           .createUserWithEmailAndPassword(usuario, this.model.senha)
           .then(
             function(user) {
-              alert("Conta criada com sucesso!");
-              this.gravaUsuarioNoBanco();
+              iziToast.success({
+                title: "Ok",
+                message: "Conta criada com sucesso!",
+                position: "topRight"
+              });
+              instance.gravaUsuarioNoBanco();
             },
             function(error) {
               // Handle Errors here.
               var errorCode = error.code;
               var errorMessage = error.message;
-              alert(
-                "Erro ao criar usuário, favor contatar o administrador do sistema!"
-              );
+              iziToast.warning({
+                title: "Atenção",
+                message:
+                  "Erro ao criar usuário, favor contatar o administrador do sistema!",
+                position: "topRight"
+              });
             }
           );
       } else {
-        alert("Usuario já existe na base!");
+        iziToast.warning({
+          title: "Atenção",
+          message: "Usuario já existe na base!",
+          position: "topRight"
+        });
         return;
       }
     },
@@ -133,6 +146,7 @@ export default {
     getAllUsers() {
       var instance = this;
       this.db.collection("Usuarios").onSnapshot(function(querySnapshot) {
+        instance.users = []
         querySnapshot.forEach(function(docs) {
           instance.users.push(docs.data());
         });

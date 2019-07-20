@@ -22,6 +22,7 @@
                             <base-input class="input-group-alternative"
                                         placeholder="Senha"
                                         type="password"
+                                        @keyup.enter.native="logar"
                                         addon-left-icon="ni ni-lock-circle-open"
                                         v-model="senha">
                             </base-input>
