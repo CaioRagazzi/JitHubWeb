@@ -39,28 +39,32 @@
           </b-button>
         </template>
         <div slot="table-busy" class="text-center text-danger my-2">
-        <b-spinner class="align-middle mr-1"></b-spinner>
-        <strong> Carregando... </strong>
-      </div>
+          <b-spinner class="align-middle mr-1"></b-spinner>
+          <strong>Carregando...</strong>
+        </div>
       </b-table>
 
-      <b-modal
-        size="md"
-        ref="modal-1"
-        title="Detalhes"
-        @hidden="fechaModal"
-        ok-only
-        centered
-      >
-        <div class="card">
-          <h3>Formulário</h3>
+      <b-modal size="md" ref="modal-1" title="Detalhes" @hidden="fechaModal" ok-only centered>
+        <div>
+          <b-nav tabs>
+            <b-nav-item
+              @click="changeTab('form')"
+              :active="tab.atual == 'form' ? true : false"
+            >Formulário</b-nav-item>
+            <b-nav-item
+              @click="changeTab('qrcode')"
+              :active="tab.atual == 'qrcode' ? true : false"
+            >QR Code</b-nav-item>
+          </b-nav>
+        </div>
+
+        <div class="pt-3" v-if="tab.atual == 'form'">
           <div v-for="item in specificResult" :key="item.id">
             <b>{{ item.dsQuestao }}</b>
             : {{ item.dsResposta }}
           </div>
         </div>
-        <div class="card">
-          <h3>QR Code</h3>
+        <div v-if="tab.atual == 'qrcode'">
           <div class="clearfix">
             <b-img v-if="qrCode" :src="qrCode" alt="Responsive image"></b-img>
           </div>
@@ -77,6 +81,7 @@ import axios from "axios";
 
 export default {
   data: () => ({
+    tab: { atual: "form" },
     isBusy: false,
     qrCode: "",
     selectedItems: [],
@@ -101,15 +106,20 @@ export default {
     this.criaArvore("Nivel1");
   },
   methods: {
+    changeTab(val) {
+      this.tab.atual = val;
+      console.log(this.tab.atual);
+    },
     carregaQrCode(cdQuestionario) {
       var storageRef = firebase.storage().ref(`${cdQuestionario}/QRCode.jpg`);
       storageRef.getDownloadURL().then(a => {
         this.qrCode = a;
       });
     },
-    fechaModal(){
-      this.specificResult = []
-      this.qrCode = ""
+    fechaModal() {
+      this.specificResult = [];
+      this.qrCode = "";
+      this.tab.atual = "form";
     },
     abreModal(row) {
       this.$refs["modal-1"].show();
@@ -125,7 +135,7 @@ export default {
       });
     },
     gerarRelatorio() {
-      this.isBusy = true
+      this.isBusy = true;
       var strings = [];
       this.selectedItems.forEach(a => {
         strings.push(a.collection.doc);
@@ -139,7 +149,7 @@ export default {
         }
       }).then(response => {
         this.result = response.data;
-        this.isBusy = false
+        this.isBusy = false;
       });
     },
     agrupaArray(responseData) {
