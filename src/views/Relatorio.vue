@@ -29,7 +29,44 @@
           <b-button variant="primary" @click="gerarRelatorio">Gerar</b-button>
         </b-form>
       </div>
-      <pre> {{ result }} </pre>
+    </div>
+
+    <div class="pt-1">
+      <b-table striped hover :items="result" :fields="fields" class="mt-5" :busy="isBusy">
+        <template slot="action" slot-scope="row">
+          <b-button @click="abreModal(row)" variant="light" size="sm">
+            <i class="fa fa-eye" aria-hidden="true"></i>
+          </b-button>
+        </template>
+        <div slot="table-busy" class="text-center text-danger my-2">
+        <b-spinner class="align-middle mr-1"></b-spinner>
+        <strong> Carregando... </strong>
+      </div>
+      </b-table>
+
+      <b-modal
+        size="md"
+        ref="modal-1"
+        title="Detalhes"
+        @hidden="fechaModal"
+        ok-only
+        centered
+      >
+        <div class="card">
+          <h3>Formulário</h3>
+          <div v-for="item in specificResult" :key="item.id">
+            <b>{{ item.dsQuestao }}</b>
+            : {{ item.dsResposta }}
+          </div>
+        </div>
+        <div class="card">
+          <h3>QR Code</h3>
+          <div class="clearfix">
+            <b-img v-if="qrCode" :src="qrCode" alt="Responsive image"></b-img>
+          </div>
+        </div>
+        <!-- <pre> {{ specificResult }} </pre> -->
+      </b-modal>
     </div>
   </div>
 </template>
@@ -40,8 +77,17 @@ import axios from "axios";
 
 export default {
   data: () => ({
+    isBusy: false,
+    qrCode: "",
     selectedItems: [],
     result: [],
+    specificResult: [],
+    fields: [
+      { key: "cdQuestionario", label: "ID" },
+      { key: "dsEstrutura", label: "Estrutura" },
+      { key: "nmDocumento", label: "Formulário" },
+      { key: "action", label: "Detalhes" }
+    ],
     db: firebase.firestore(),
     arvore: [],
     id: 1,
@@ -55,7 +101,31 @@ export default {
     this.criaArvore("Nivel1");
   },
   methods: {
+    carregaQrCode(cdQuestionario) {
+      var storageRef = firebase.storage().ref(`${cdQuestionario}/QRCode.jpg`);
+      storageRef.getDownloadURL().then(a => {
+        this.qrCode = a;
+      });
+    },
+    fechaModal(){
+      this.specificResult = []
+      this.qrCode = ""
+    },
+    abreModal(row) {
+      this.$refs["modal-1"].show();
+
+      this.carregaQrCode(row.item.cdQuestionario);
+
+      axios({
+        method: "get",
+        url:
+          "https://jithub.firebaseapp.com/relatorio/" + row.item.cdQuestionario
+      }).then(response => {
+        this.specificResult = response.data;
+      });
+    },
     gerarRelatorio() {
+      this.isBusy = true
       var strings = [];
       this.selectedItems.forEach(a => {
         strings.push(a.collection.doc);
@@ -68,11 +138,11 @@ export default {
           strings
         }
       }).then(response => {
-        this.agrupaArray(response.data)
+        this.result = response.data;
+        this.isBusy = false
       });
     },
     agrupaArray(responseData) {
-
       const groupBy = key => array =>
         array.reduce((objectsByKeyValue, obj) => {
           const value = obj[key];
@@ -82,9 +152,9 @@ export default {
           return objectsByKeyValue;
         }, {});
 
-        const groupByCdQuestionario = groupBy('cdQuestionario');
+      const groupByCdQuestionario = groupBy("cdQuestionario");
 
-        this.result = groupByCdQuestionario(responseData)
+      this.result = groupByCdQuestionario(responseData);
     },
     criaArvore(collection) {
       this.arvore = [];
