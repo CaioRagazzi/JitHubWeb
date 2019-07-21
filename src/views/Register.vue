@@ -4,8 +4,8 @@
     <div class="card">
       <div class="card-body">
         <h2>Cadastro</h2>
-        <b-form>
-          <b-form-group id="fieldset-1" label="Login:" label-for="input-1">
+        <b-form-row>
+          <b-form-group class="pr-4" id="fieldset-1" label="Login:" label-for="input-1">
             <b-form-input
               style="width:300px;"
               id="input-1"
@@ -17,6 +17,26 @@
             <b-form-valid-feedback :state="validationCpf">Ok.</b-form-valid-feedback>
           </b-form-group>
 
+          <b-form-group class="pr-4" id="fieldset-3" label="Email:" label-for="input-3">
+            <b-form-input style="width:300px;" id="input-3" v-model="model.email" trim></b-form-input>
+            <!-- <b-form-invalid-feedback :state="validationEmail">Favor digitar um e-mail valido</b-form-invalid-feedback>
+            <b-form-valid-feedback :state="validationEmail">Ok.</b-form-valid-feedback>-->
+          </b-form-group>
+
+          <b-form-group class="pr-4" id="fieldset-4" label="Nome:" label-for="input-4">
+            <b-form-input style="width:300px;" id="input-4" v-model="model.nome" trim></b-form-input>
+            <!-- <b-form-invalid-feedback :state="validationNome">Favor digitar um nome</b-form-invalid-feedback>
+            <b-form-valid-feedback :state="validationNome">Ok.</b-form-valid-feedback>-->
+          </b-form-group>
+
+          <b-form-group class="pr-4" id="fieldset-5" label="Sobrenome:" label-for="input-5">
+            <b-form-input style="width:300px;" id="input-5" v-model="model.sobreNome" trim></b-form-input>
+            <!-- <b-form-invalid-feedback :state="validationSobreNome">Favor digitar um sobrenome</b-form-invalid-feedback>
+            <b-form-valid-feedback :state="validationSobreNome">Ok.</b-form-valid-feedback>-->
+          </b-form-group>
+        </b-form-row>
+
+        <b-form-row>
           <b-form-group id="fieldset-2" label="Senha" label-for="input-2">
             <b-form-input
               style="width:300px;"
@@ -31,15 +51,26 @@
             >A senha deve conter seis ou mais caracteres</b-form-invalid-feedback>
             <b-form-valid-feedback :state="validationSenha">Ok.</b-form-valid-feedback>
           </b-form-group>
+        </b-form-row>
+
+        <b-form-row>
           <b-form-group>
             <b-button @click="criarNovaConta" variant="primary">Criar</b-button>
           </b-form-group>
-        </b-form>
+        </b-form-row>
       </div>
     </div>
 
     <div class="pt-1">
-      <b-table striped hover :items="users" :fields="fields" class="mt-5"></b-table>
+      <b-table striped hover :items="users" :fields="fields" class="mt-5">
+        <!-- <template slot="action" slot-scope="row">
+          <b-button  v-b-modal.modal-1 variant="danger" size="sm">Deletar</b-button>
+        </template> -->
+      </b-table>
+
+      <!-- <b-modal id="modal-1" title="Atenção">
+        <p class="my-4">Tem certeza que deseja deletar o usuário?</p>
+      </b-modal> -->
     </div>
   </div>
 </template>
@@ -55,13 +86,32 @@ export default {
       db: firebase.firestore(),
       model: {
         cpf: "",
-        senha: ""
+        senha: "",
+        email: "",
+        nome: "",
+        sobreNome: ""
       },
-      fields: [{ key: "cpf", label: "cpf" }],
+      fields: [
+        { key: "cpf", label: "cpf" },
+        { key: "email", label: "E-mail" },
+        { key: "nome", label: "Nome" },
+        { key: "sobreNome", label: "Sobrenome" },
+        // { key: "action", label: "Opções" }
+      ],
       users: []
     };
   },
   computed: {
+    validationSobreNome() {
+      return this.model.sobreNome.length > 0;
+    },
+    validationNome() {
+      return this.model.nome.length > 0;
+    },
+    validationEmail() {
+      var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return re.test(String(this.model.email).toLowerCase());
+    },
     validationCpf() {
       return this.model.cpf.length == 11;
     },
@@ -142,11 +192,14 @@ export default {
 
       this.model.cpf = "";
       this.model.senha = "";
+      this.model.email = "";
+      this.model.nome = "";
+      this.model.sobreNome = "";
     },
     getAllUsers() {
       var instance = this;
       this.db.collection("Usuarios").onSnapshot(function(querySnapshot) {
-        instance.users = []
+        instance.users = [];
         querySnapshot.forEach(function(docs) {
           instance.users.push(docs.data());
         });
