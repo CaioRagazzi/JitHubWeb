@@ -52,6 +52,7 @@ export default {
   name: "login",
   data() {
     return {
+      db: firebase.firestore(),
       busy: false,
       login: "",
       senha: ""
@@ -67,14 +68,15 @@ export default {
         .signInWithEmailAndPassword(usuario, this.senha)
         .then(
           user => {
-            // this.$router.replace("inventario");
-            console.log(user);
-            
+            this.$router.replace("inventario");
           },
           err => {
             alert("Oops..." + err.message);
           }
         );
+    },
+    validaPermissao(){
+      this.db.collection('Usuarios').where()
     }
   }
 };
