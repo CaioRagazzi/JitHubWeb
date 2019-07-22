@@ -1,16 +1,16 @@
 <template>
   <div>
-    <h1>Listagem</h1>
+    <h1>Inventário</h1>
     <div class="card">
       <div class="card-body">
-        <h2>Inventário</h2>
-        <v-treeview transition expand-icon item-key="id" :items="arvore" open-on-click>
+        <h2>Estrutura</h2>
+        <v-treeview transition expand-icon="a" item-key="id" :items="arvore" open-on-click>
           <template slot="prepend" slot-scope="{ item }">
             <a>{{ item.collection.tipo == "nivel" ? ">" : "o" }}</a>
           </template>
           <template slot="label" slot-scope="{ item }">
             <div @click="openDialog(item)">
-              <a>{{ item.name }}</a>
+              {{ item.name }}
             </div>
           </template>
         </v-treeview>
@@ -19,7 +19,7 @@
 
     <div class="card mt-5" v-if="itemOrForm">
       <div class="card-body">
-        <h1>Formulário</h1>
+        <h1>Perguntas</h1>
         <h2>{{ itemAtual.name }}</h2>
         <perguntasFormulario :docData="docData" />
       </div>
@@ -87,6 +87,7 @@ export default {
   }),
   created() {
     this.criaArvore("Nivel1");
+    console.log(this.$vuetify.icons.subgroup);    
   },
   methods: {
     checkObjectEmpty(itemAtual) {

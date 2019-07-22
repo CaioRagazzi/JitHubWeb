@@ -25,7 +25,7 @@
       </div>
     </div>
 
-    <b-table striped hover :items="perguntas" class="mt-5"></b-table>
+    <b-table striped hover :fields="fields" sort-by="pergunta" :items="perguntas" class="mt-5"></b-table>
   </div>
 </template>
 
@@ -38,6 +38,7 @@ export default {
       db: firebase.firestore(),
       perguntas: [],
       form: {},
+      fields: [{key: 'pergunta', label: 'Pergunta' }, {key: 'tipo', label: 'Tipo'}],
       perguntasTipo: []
     };
   },

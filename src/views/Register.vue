@@ -9,6 +9,7 @@
             <b-form-input
               style="width:300px;"
               id="input-1"
+              placeholder="CPF"
               :state="validationCpf"
               v-model="model.cpf"
               trim
@@ -37,7 +38,7 @@
         </b-form-row>
 
         <b-form-row>
-          <b-form-group id="fieldset-2" label="Senha" label-for="input-2">
+          <b-form-group class="pr-4" id="fieldset-2" label="Senha" label-for="input-2">
             <b-form-input
               style="width:300px;"
               id="input-2"
@@ -48,7 +49,22 @@
             ></b-form-input>
             <b-form-invalid-feedback
               :state="validationSenha"
-            >A senha deve conter seis ou mais caracteres</b-form-invalid-feedback>
+            >{{ stringSenha }}</b-form-invalid-feedback>
+            <b-form-valid-feedback :state="validationSenha">Ok.</b-form-valid-feedback>
+          </b-form-group>
+
+          <b-form-group id="fieldset-6" label="Confirme a senha" label-for="input-6">
+            <b-form-input
+              style="width:300px;"
+              id="input-6"
+              type="password"
+              :state="validationSenha"
+              v-model="model.confirmSenha"
+              trim
+            ></b-form-input>
+            <b-form-invalid-feedback
+              :state="validationSenha"
+            >{{ stringSenha }}</b-form-invalid-feedback>
             <b-form-valid-feedback :state="validationSenha">Ok.</b-form-valid-feedback>
           </b-form-group>
         </b-form-row>
@@ -62,15 +78,19 @@
     </div>
 
     <div class="pt-1">
-      <b-table striped hover :items="users" :fields="fields" class="mt-5">
+      <b-table striped hover :items="users" :fields="fields" :busy="isBusy" class="mt-5">
         <!-- <template slot="action" slot-scope="row">
           <b-button  v-b-modal.modal-1 variant="danger" size="sm">Deletar</b-button>
-        </template> -->
+        </template>-->
+        <div slot="table-busy" class="text-center text-danger my-2">
+          <b-spinner class="align-middle mr-1"></b-spinner>
+          <strong>Carregando...</strong>
+        </div>
       </b-table>
 
       <!-- <b-modal id="modal-1" title="Atenção">
         <p class="my-4">Tem certeza que deseja deletar o usuário?</p>
-      </b-modal> -->
+      </b-modal>-->
     </div>
   </div>
 </template>
@@ -83,10 +103,12 @@ export default {
   name: "register",
   data() {
     return {
+      isBusy: false,
       db: firebase.firestore(),
       model: {
         cpf: "",
         senha: "",
+        confirmSenha: "",
         email: "",
         nome: "",
         sobreNome: ""
@@ -95,13 +117,20 @@ export default {
         { key: "cpf", label: "cpf" },
         { key: "email", label: "E-mail" },
         { key: "nome", label: "Nome" },
-        { key: "sobreNome", label: "Sobrenome" },
+        { key: "sobreNome", label: "Sobrenome" }
         // { key: "action", label: "Opções" }
       ],
       users: []
     };
   },
   computed: {
+    stringSenha(){
+      if(this.model.senha.length < 6 && this.model.senha != this.model.confirmSenha){
+        return "A senha deve conter 6 ou mais caracteres"
+      } else if (this.model.senha != this.model.confirmSenha){
+        return "A senha e a confirmação da senha deve ser iguais"
+      }
+    },
     validationSobreNome() {
       return this.model.sobreNome.length > 0;
     },
@@ -113,13 +142,20 @@ export default {
       return re.test(String(this.model.email).toLowerCase());
     },
     validationCpf() {
+      if (this.model.cpf.length == 0){
+        return undefined
+      }
       return this.model.cpf.length == 11;
     },
     validationSenha() {
-      return this.model.senha.length >= 6;
+      if (this.model.senha.length == 0){
+        return undefined
+      }
+      return this.model.senha.length >= 6 && this.model.senha == this.model.confirmSenha;
     }
   },
   created() {
+    this.validationCpf = undefined
     this.getAllUsers();
   },
   methods: {
@@ -162,6 +198,7 @@ export default {
                 position: "topRight"
               });
               instance.gravaUsuarioNoBanco();
+              instance.getAllUsers();
             },
             function(error) {
               // Handle Errors here.
@@ -197,12 +234,14 @@ export default {
       this.model.sobreNome = "";
     },
     getAllUsers() {
+      this.isBusy = true
       var instance = this;
       this.db.collection("Usuarios").onSnapshot(function(querySnapshot) {
         instance.users = [];
         querySnapshot.forEach(function(docs) {
           instance.users.push(docs.data());
         });
+        instance.isBusy = false
       });
     }
   }
