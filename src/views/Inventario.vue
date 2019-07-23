@@ -87,7 +87,6 @@ export default {
   }),
   created() {
     this.criaArvore("Nivel1");
-    console.log(this.$vuetify.icons.subgroup);    
   },
   methods: {
     checkObjectEmpty(itemAtual) {
