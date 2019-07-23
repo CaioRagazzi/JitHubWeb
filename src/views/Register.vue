@@ -5,7 +5,7 @@
       <div class="card-body">
         <h2>Cadastro</h2>
         <b-form-row>
-          <b-form-group class="pr-4" id="fieldset-1" label="Login:" label-for="input-1">
+          <b-form-group class="pr-4" id="fieldset-1" label="Login: *" label-for="input-1">
             <b-form-input
               style="width:300px;"
               id="input-1"
@@ -35,10 +35,14 @@
             <!-- <b-form-invalid-feedback :state="validationSobreNome">Favor digitar um sobrenome</b-form-invalid-feedback>
             <b-form-valid-feedback :state="validationSobreNome">Ok.</b-form-valid-feedback>-->
           </b-form-group>
+
+          <b-form-group class="pr-4" id="fieldset-6" label="Perfil: *" label-for="input-6">
+            <b-form-select id="input-6" v-model="model.perfil" :options="options"></b-form-select>
+          </b-form-group>
         </b-form-row>
 
         <b-form-row>
-          <b-form-group class="pr-4" id="fieldset-2" label="Senha" label-for="input-2">
+          <b-form-group class="pr-4" id="fieldset-2" label="Senha: *" label-for="input-2">
             <b-form-input
               style="width:300px;"
               id="input-2"
@@ -47,13 +51,11 @@
               v-model="model.senha"
               trim
             ></b-form-input>
-            <b-form-invalid-feedback
-              :state="validationSenha"
-            >{{ stringSenha }}</b-form-invalid-feedback>
+            <b-form-invalid-feedback :state="validationSenha">{{ stringSenha }}</b-form-invalid-feedback>
             <b-form-valid-feedback :state="validationSenha">Ok.</b-form-valid-feedback>
           </b-form-group>
 
-          <b-form-group id="fieldset-6" label="Confirme a senha" label-for="input-6">
+          <b-form-group id="fieldset-6" label="Confirme a senha: *" label-for="input-6">
             <b-form-input
               style="width:300px;"
               id="input-6"
@@ -62,16 +64,15 @@
               v-model="model.confirmSenha"
               trim
             ></b-form-input>
-            <b-form-invalid-feedback
-              :state="validationSenha"
-            >{{ stringSenha }}</b-form-invalid-feedback>
+            <b-form-invalid-feedback :state="validationSenha">{{ stringSenha }}</b-form-invalid-feedback>
             <b-form-valid-feedback :state="validationSenha">Ok.</b-form-valid-feedback>
           </b-form-group>
         </b-form-row>
 
         <b-form-row>
           <b-form-group>
-            <b-button @click="criarNovaConta" variant="primary">Criar</b-button>
+            <b-spinner v-if="busy" label="Spinning"></b-spinner>
+            <b-button v-else @click="criarNovaConta" variant="primary">Criar</b-button>
           </b-form-group>
         </b-form-row>
       </div>
@@ -79,9 +80,9 @@
 
     <div class="pt-1">
       <b-table striped hover :items="users" :fields="fields" :busy="isBusy" class="mt-5">
-        <!-- <template slot="action" slot-scope="row">
-          <b-button  v-b-modal.modal-1 variant="danger" size="sm">Deletar</b-button>
-        </template>-->
+        <template slot="perfil" slot-scope="row">
+          {{ row.item.perfil == 'admin' ? 'Administrador' : 'Usuario' }}
+        </template>
         <div slot="table-busy" class="text-center text-danger my-2">
           <b-spinner class="align-middle mr-1"></b-spinner>
           <strong>Carregando...</strong>
@@ -103,6 +104,12 @@ export default {
   name: "register",
   data() {
     return {
+      busy: false,
+      options: [
+        { value: null, text: "Selecione" },
+        { value: "user", text: "Usuario" },
+        { value: "admin", text: "Administrador" }
+      ],
       isBusy: false,
       db: firebase.firestore(),
       model: {
@@ -111,24 +118,28 @@ export default {
         confirmSenha: "",
         email: "",
         nome: "",
-        sobreNome: ""
+        sobreNome: "",
+        perfil: null,
       },
       fields: [
         { key: "cpf", label: "cpf" },
         { key: "email", label: "E-mail" },
         { key: "nome", label: "Nome" },
-        { key: "sobreNome", label: "Sobrenome" }
-        // { key: "action", label: "Opções" }
+        { key: "sobreNome", label: "Sobrenome" },
+        { key: "perfil", label: "Perfil" }
       ],
       users: []
     };
   },
   computed: {
-    stringSenha(){
-      if(this.model.senha.length < 6 && this.model.senha != this.model.confirmSenha){
-        return "A senha deve conter 6 ou mais caracteres"
-      } else if (this.model.senha != this.model.confirmSenha){
-        return "A senha e a confirmação da senha deve ser iguais"
+    stringSenha() {
+      if (
+        this.model.senha.length < 6 &&
+        this.model.senha != this.model.confirmSenha
+      ) {
+        return "A senha deve conter 6 ou mais caracteres";
+      } else if (this.model.senha != this.model.confirmSenha) {
+        return "A senha e a confirmação da senha deve ser iguais";
       }
     },
     validationSobreNome() {
@@ -142,20 +153,22 @@ export default {
       return re.test(String(this.model.email).toLowerCase());
     },
     validationCpf() {
-      if (this.model.cpf.length == 0){
-        return undefined
+      if (this.model.cpf.length == 0) {
+        return undefined;
       }
       return this.model.cpf.length == 11;
     },
     validationSenha() {
-      if (this.model.senha.length == 0){
-        return undefined
+      if (this.model.senha.length == 0) {
+        return undefined;
       }
-      return this.model.senha.length >= 6 && this.model.senha == this.model.confirmSenha;
+      return (
+        this.model.senha.length >= 6 &&
+        this.model.senha == this.model.confirmSenha
+      );
     }
   },
   created() {
-    this.validationCpf = undefined
     this.getAllUsers();
   },
   methods: {
@@ -173,13 +186,14 @@ export default {
     },
     async criarNovaConta() {
       var instance = this;
-
-      if (this.validationCpf == false || this.validationSenha == false) {
+      this.busy = true
+      if (this.validationCpf == false || this.validationSenha == false || this.model.perfil == null) {
         iziToast.warning({
           title: "Atenção",
           message: "Todos os campos obrigatórios devem estar preenchidos!",
           position: "topRight"
         });
+        this.busy = false
         return;
       }
       var resposta = await this.validaSeUsuarioJaExiste();
@@ -232,16 +246,19 @@ export default {
       this.model.email = "";
       this.model.nome = "";
       this.model.sobreNome = "";
+      this.model.confirmSenha = "";
+      this.model.perfil = null;
     },
     getAllUsers() {
-      this.isBusy = true
+      this.isBusy = true;
       var instance = this;
       this.db.collection("Usuarios").onSnapshot(function(querySnapshot) {
         instance.users = [];
         querySnapshot.forEach(function(docs) {
           instance.users.push(docs.data());
         });
-        instance.isBusy = false
+        instance.isBusy = false;
+        instance.busy = false
       });
     }
   }

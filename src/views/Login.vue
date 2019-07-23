@@ -37,12 +37,13 @@
     </div>
   </div>
 </template>
- 
- 
+
+
 <script>
 import firebase from "firebase";
 import BaseInput from "@/components/BaseInput.vue";
 import BaseButton from "@/components/BaseButton.vue";
+import iziToast from "izitoast";
 
 export default {
   components: {
@@ -60,23 +61,59 @@ export default {
   },
   methods: {
     logar: function() {
-        this.busy = true
+      this.busy = true;
       let usuario = this.login + "@dominio.com.br";
-      console.log("logando");
       firebase
         .auth()
         .signInWithEmailAndPassword(usuario, this.senha)
         .then(
           user => {
-            this.$router.replace("inventario");
+            this.validaPermissao();
           },
           err => {
-            alert("Oops..." + err.message);
+            iziToast.warning({
+              title: "Atenção",
+              // message: err.message,
+              message: 'Erro ao realizar o login',
+              position: "topRight"
+            });
+            this.busy = false;
           }
         );
     },
-    validaPermissao(){
-      this.db.collection('Usuarios').where()
+    validaPermissao() {
+      this.db
+        .collection("Usuarios")
+        .where("cpf", "==", `${this.login}`)
+        .get()
+        .then(a => {
+          if (a.docs[0].data().perfil == "admin") {
+            this.$router.replace("inventario");
+          } else {
+            iziToast.warning({
+              title: "Atenção",
+              message: "Você não possui permissão para acessar esse módulo!",
+              position: "topRight"
+            });
+            this.deslogar();
+            this.busy = false;
+          }
+        });
+    },
+    deslogar() {
+      var instance = this;
+      firebase
+        .auth()
+        .signOut()
+        .then(
+          function() {
+            instance.login = "",
+            instance.senha = ""
+          },
+          function(error) {
+            console.log(error);
+          }
+        );
     }
   }
 };
