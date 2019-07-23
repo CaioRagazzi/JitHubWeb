@@ -55,6 +55,10 @@
               @click="changeTab('qrcode')"
               :active="tab.atual == 'qrcode' ? true : false"
             >QR Code</b-nav-item>
+            <b-nav-item
+              @click="carregaImagens"
+              :active="tab.atual == 'imagem' ? true : false"
+            >Imagens</b-nav-item>
           </b-nav>
         </div>
 
@@ -69,7 +73,21 @@
             <b-img v-if="qrCode" :src="qrCode" alt="Responsive image"></b-img>
           </div>
         </div>
-        <!-- <pre> {{ specificResult }} </pre> -->
+        <b-container fluid v-if="tab.atual == 'imagem'">
+          <b-row>
+            <b-col>
+              <b-img
+                v-for="img in imagensAtuais"
+                :key="img.id"
+                class="pt-2 mt-5 mb-5 flip-block-container"
+                height="120"
+                :src="img.cdUrl"
+                alt="Responsive image"
+                @click="abrirImagem(img.cdUrl)"
+              ></b-img>
+            </b-col>
+          </b-row>
+        </b-container>
       </b-modal>
     </div>
   </div>
@@ -81,6 +99,7 @@ import axios from "axios";
 
 export default {
   data: () => ({
+    imagensAtuais: [],
     tab: { atual: "form" },
     isBusy: false,
     qrCode: "",
@@ -106,6 +125,21 @@ export default {
     this.criaArvore("Nivel1");
   },
   methods: {
+    abrirImagem(url) {
+      window.open(url);
+    },
+    carregaImagens() {
+      this.changeTab("imagem");
+
+      axios({
+        method: "get",
+        url:
+          "https://jithub.firebaseapp.com/imagens" +
+          `/${this.specificResult[0].cdQuestionario}`
+      }).then(response => {
+        this.imagensAtuais = response.data;
+      });
+    },
     changeTab(val) {
       this.tab.atual = val;
       console.log(this.tab.atual);
@@ -118,6 +152,7 @@ export default {
     },
     fechaModal() {
       this.specificResult = [];
+      this.imagensAtuais = [];
       this.qrCode = "";
       this.tab.atual = "form";
     },
@@ -234,4 +269,10 @@ export default {
 </script>
 
 <style>
+.flip-block-container {
+  transform: rotate(90deg);
+  width: 25%;
+  height: 50%;
+  cursor: pointer;
+}
 </style>
