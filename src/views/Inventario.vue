@@ -4,7 +4,7 @@
     <div class="card">
       <div class="card-body">
         <h2>Estrutura</h2>
-        <v-treeview transition expand-icon="a" item-key="id" :items="arvore" open-on-click>
+        <v-treeview transition expand-icon="aa" item-key="id" :items="arvore" open-on-click>
           <template slot="prepend" slot-scope="{ item }">
             <a>{{ item.collection.tipo == "nivel" ? ">" : "o" }}</a>
           </template>
