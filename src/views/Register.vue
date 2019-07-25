@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="m-4">
     <h1>Logins</h1>
     <div class="card">
       <div class="card-body">
@@ -80,8 +80,21 @@
 
     <div class="pt-1">
       <b-table striped hover :items="users" :fields="fields" :busy="isBusy" class="mt-5">
-        <template slot="perfil" slot-scope="row">
-          {{ row.item.perfil == 'admin' ? 'Administrador' : 'Usuario' }}
+        <template
+          slot="perfil"
+          slot-scope="row"
+        >{{ row.item.perfil == 'admin' ? 'Administrador' : 'Usuario' }}</template>
+        <template slot="action" slot-scope="row">
+          <b-button
+            v-b-tooltip.hover
+            @click="abrirModal(row)"
+            title="Excluir Usuario"
+            placement="right"
+            variant="outline-primary"
+            style="border: 0;"
+          >
+            <i class="fa fa-trash"></i>
+          </b-button>
         </template>
         <div slot="table-busy" class="text-center text-danger my-2">
           <b-spinner class="align-middle mr-1"></b-spinner>
@@ -89,9 +102,9 @@
         </div>
       </b-table>
 
-      <!-- <b-modal id="modal-1" title="Atenção">
-        <p class="my-4">Tem certeza que deseja deletar o usuário?</p>
-      </b-modal>-->
+      <b-modal v-model="modalDeletarShow" title="Atenção" @ok="excluirUsuario">
+        <p class="my-4">Tem certeza que deseja deletar o usuário com CPF "{{ usuarioAtual.cpf }}"?</p>
+      </b-modal>
     </div>
   </div>
 </template>
@@ -104,6 +117,8 @@ export default {
   name: "register",
   data() {
     return {
+      usuarioAtual: {},
+      modalDeletarShow: false,
       busy: false,
       options: [
         { value: null, text: "Selecione" },
@@ -120,13 +135,15 @@ export default {
         nome: "",
         sobreNome: "",
         perfil: null,
+        ativo: true
       },
       fields: [
         { key: "cpf", label: "cpf" },
         { key: "email", label: "E-mail" },
         { key: "nome", label: "Nome" },
         { key: "sobreNome", label: "Sobrenome" },
-        { key: "perfil", label: "Perfil" }
+        { key: "perfil", label: "Perfil" },
+        { key: "action", label: "Ações" }
       ],
       users: []
     };
@@ -172,7 +189,22 @@ export default {
     this.getAllUsers();
   },
   methods: {
-    async validaSeUsuarioJaExiste() {
+    excluirUsuario() {
+      var teste = this.db
+        .collection("Usuarios")
+        .where("cpf", "==", this.usuarioAtual.cpf)
+        .get()
+        .then(a => {
+          this.db.collection("Usuarios").doc(a.docs[0].id).update({
+            ativo: false
+          })
+        });
+    },
+    abrirModal(row) {
+      this.usuarioAtual = row.item;
+      this.modalDeletarShow = true;
+    },
+    async validaSeUsuarioNaoExiste() {
       var retorno = Boolean;
       await this.db
         .collection("Usuarios")
@@ -186,17 +218,21 @@ export default {
     },
     async criarNovaConta() {
       var instance = this;
-      this.busy = true
-      if (this.validationCpf == false || this.validationSenha == false || this.model.perfil == null) {
+      this.busy = true;
+      if (
+        this.validationCpf == false ||
+        this.validationSenha == false ||
+        this.model.perfil == null
+      ) {
         iziToast.warning({
           title: "Atenção",
           message: "Todos os campos obrigatórios devem estar preenchidos!",
           position: "topRight"
         });
-        this.busy = false
+        this.busy = false;
         return;
       }
-      var resposta = await this.validaSeUsuarioJaExiste();
+      var resposta = await this.validaSeUsuarioNaoExiste();
 
       if (resposta == true) {
         let usuario = this.model.cpf + "@dominio.com.br";
@@ -252,14 +288,17 @@ export default {
     getAllUsers() {
       this.isBusy = true;
       var instance = this;
-      this.db.collection("Usuarios").onSnapshot(function(querySnapshot) {
-        instance.users = [];
-        querySnapshot.forEach(function(docs) {
-          instance.users.push(docs.data());
+      this.db
+        .collection("Usuarios")
+        .where("ativo", "==", true)
+        .onSnapshot(function(querySnapshot) {
+          instance.users = [];
+          querySnapshot.forEach(function(docs) {
+            instance.users.push(docs.data());
+          });
+          instance.isBusy = false;
+          instance.busy = false;
         });
-        instance.isBusy = false;
-        instance.busy = false
-      });
     }
   }
 };

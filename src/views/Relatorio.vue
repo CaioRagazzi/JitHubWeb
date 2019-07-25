@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="m-4">
     <h1>Relatório</h1>
     <div class="card">
       <div class="card-body">
@@ -95,7 +95,7 @@
 
 <script>
 import firebase from "firebase";
-import axios from "axios";
+import { relatorioHttp } from "../api/relatorio";
 
 export default {
   data: () => ({
@@ -131,18 +131,17 @@ export default {
     carregaImagens() {
       this.changeTab("imagem");
 
-      axios({
-        method: "get",
-        url:
-          "https://jithub.firebaseapp.com/imagens" +
-          `/${this.specificResult[0].cdQuestionario}`
-      }).then(response => {
-        this.imagensAtuais = response.data;
-      });
+      relatorioHttp
+        .getImagens(this.specificResult[0].cdQuestionario)
+        .then(response => {
+          this.imagensAtuais = response.data;
+        })
+        .catch(error => {
+          console.log(error);
+        });
     },
     changeTab(val) {
       this.tab.atual = val;
-      console.log(this.tab.atual);
     },
     carregaQrCode(cdQuestionario) {
       var storageRef = firebase.storage().ref(`${cdQuestionario}/QRCode.jpg`);
@@ -161,13 +160,11 @@ export default {
 
       this.carregaQrCode(row.item.cdQuestionario);
 
-      axios({
-        method: "get",
-        url:
-          "https://jithub.firebaseapp.com/relatorio/" + row.item.cdQuestionario
-      }).then(response => {
-        this.specificResult = response.data;
-      });
+      relatorioHttp
+        .getSpecificRelatorio(row.item.cdQuestionario)
+        .then(response => {
+          this.specificResult = response.data;
+        });
     },
     gerarRelatorio() {
       this.isBusy = true;
@@ -176,16 +173,15 @@ export default {
         strings.push(a.collection.doc);
       });
 
-      axios({
-        method: "post",
-        url: "https://jithub.firebaseapp.com/relatorio",
-        data: {
-          strings
-        }
-      }).then(response => {
-        this.result = response.data;
-        this.isBusy = false;
-      });
+      relatorioHttp
+        .setRelatorio({ strings })
+        .then(response => {
+          this.result = response.data;
+          this.isBusy = false;
+        })
+        .catch(error => {
+          console.log(error);
+        });
     },
     agrupaArray(responseData) {
       const groupBy = key => array =>
@@ -211,6 +207,9 @@ export default {
             var b = this.getObject(a);
             this.arvore.push(b);
           });
+        })
+        .catch(error => {
+          console.log(error);
         });
     },
     getObject(document) {

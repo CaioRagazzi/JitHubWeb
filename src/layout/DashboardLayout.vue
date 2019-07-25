@@ -1,10 +1,6 @@
 <template>
   <div class="wrapper" :class="{ 'nav-open': $sidebar.showSidebar }">
-    <side-bar
-      :background-color="sidebarBackground"
-      short-title="Argon"
-      title="Argon"
-    >
+    <side-bar :background-color="sidebarBackground" short-title="Argon" title="Argon">
       <template slot="links">
         <sidebar-item
           :link="{
@@ -14,20 +10,23 @@
           }"
         />
 
-        <sidebar-item :link="{name: 'Relatório', icon: 'ni ni-key-25 text-info', path: '/respostas'}"/>
-        <sidebar-item :link="{name: 'Perguntas', icon: 'ni ni-planet text-blue', path: '/perguntas'}"/>
-        <sidebar-item :link="{name: 'Criar nova conta', icon: 'ni ni-circle-08 text-pink', path: '/register'}"/>
+        <sidebar-item
+          :link="{name: 'Relatório', icon: 'ni ni-key-25 text-info', path: '/respostas'}"
+        />
+        <sidebar-item
+          :link="{name: 'Perguntas', icon: 'ni ni-planet text-blue', path: '/perguntas'}"
+        />
+        <sidebar-item
+          :link="{name: 'Criar nova conta', icon: 'ni ni-circle-08 text-pink', path: '/register'}"
+        />
         <li class="nav-item">
           <a style="cursor: pointer;" class="nav-link" @click="deslogar">
-              <template>
-                  <i class="ni ni-button-power text-pink"></i>
-                  <a class="nav-link-text">Sair</a>
-              </template>
+            <template>
+              <i class="ni ni-button-power text-pink"></i>
+              <a class="nav-link-text">Sair</a>
+            </template>
           </a>
         </li>
-        <!-- <sidebar-item :link="{name: 'Criar nova conta', icon: 'ni ni-circle-08 text-pink', path: '/register'}"/> -->
-        <!-- <sidebar-item :link="{name: 'Inventario teste', icon: 'ni ni-circle-08 text-pink', path: '/inventario'}"/> -->
-
       </template>
     </side-bar>
     <div class="main-content" :data="sidebarBackground">
@@ -43,38 +42,44 @@
   </div>
 </template>
 <script>
-  import DashboardNavbar from './DashboardNavbar.vue';
-  import ContentFooter from './ContentFooter.vue';
-  import { FadeTransition } from 'vue2-transitions';
-  import firebase from 'firebase'
+import DashboardNavbar from "./DashboardNavbar.vue";
+import ContentFooter from "./ContentFooter.vue";
+import { FadeTransition } from "vue2-transitions";
+import firebase from "firebase";
 
-  export default {
-    components: {
-      DashboardNavbar,
-      ContentFooter,
-      FadeTransition
+export default {
+  components: {
+    DashboardNavbar,
+    ContentFooter,
+    FadeTransition
+  },
+  data() {
+    return {
+      sidebarBackground: "vue" //vue|blue|orange|green|red|primary
+    };
+  },
+  methods: {
+    deslogar() {
+      var instance = this;
+      firebase
+        .auth()
+        .signOut()
+        .then(
+          function() {
+            instance.$router.replace("login");
+          },
+          function(error) {
+            console.log(error);
+          }
+        );
     },
-    data() {
-      return {
-        sidebarBackground: 'vue' //vue|blue|orange|green|red|primary
-      };
-    },
-    methods: {
-      deslogar(){
-        var instance = this
-        firebase.auth().signOut().then(function() {
-          instance.$router.replace('login')
-        }, function(error) {
-          console.log(error);
-        });
-      },
-      toggleSidebar() {
-        if (this.$sidebar.showSidebar) {
-          this.$sidebar.displaySidebar(false);
-        }
+    toggleSidebar() {
+      if (this.$sidebar.showSidebar) {
+        this.$sidebar.displaySidebar(false);
       }
     }
-  };
+  }
+};
 </script>
 <style lang="scss">
 </style>

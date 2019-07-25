@@ -1,12 +1,12 @@
 <template>
     <div>
         <div class="row" v-for="(pergunta, idx) in perguntas" :key="idx">
-            <b-col lg="3" class="pb-2">
+            <div lg="3" class="col pb-2">
                 <h5 class="pr-3"> Pergunta: {{pergunta.reference.pergunta}} </h5>
-            </b-col >
-            <b-col lg="3" class="pb-2">
+            </div >
+            <div lg="3" class="col pb-2">
                 <b-button v-b-modal.modal-delete size="sm" @click="atribuirPergunta(pergunta)" class="btn btn-danger" v-b-tooltip.hover title="Exluir pergunta">X</b-button>
-            </b-col>
+            </div>
         </div>
 
         <b-modal id="modal-delete" centered title="Excluir" @ok="excluirPergunta">

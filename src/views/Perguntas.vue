@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="m-4">
     <h1>Perguntas</h1>
 
     <div class="card">
@@ -38,7 +38,10 @@ export default {
       db: firebase.firestore(),
       perguntas: [],
       form: {},
-      fields: [{key: 'pergunta', label: 'Pergunta' }, {key: 'tipo', label: 'Tipo'}],
+      fields: [
+        { key: "pergunta", label: "Pergunta" },
+        { key: "tipo", label: "Tipo" }
+      ],
       perguntasTipo: []
     };
   },

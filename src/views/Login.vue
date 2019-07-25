@@ -87,7 +87,7 @@ export default {
         .where("cpf", "==", `${this.login}`)
         .get()
         .then(a => {
-          if (a.docs[0].data().perfil == "admin") {
+          if (a.docs[0].data().perfil == "admin" && a.docs[0].data().ativo == true) {
             this.$router.replace("inventario");
           } else {
             iziToast.warning({

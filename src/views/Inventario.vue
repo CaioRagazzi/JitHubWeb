@@ -1,61 +1,66 @@
 <template>
-  <div>
+  <div class="m-4">
     <h1>Inventário</h1>
-    <div class="card">
-      <div class="card-body">
-        <h2>Estrutura</h2>
-        <v-treeview transition expand-icon="aa" item-key="id" :items="arvore" open-on-click>
-          <template slot="prepend" slot-scope="{ item }">
-            <a>{{ item.collection.tipo == "nivel" ? ">" : "o" }}</a>
-          </template>
-          <template slot="label" slot-scope="{ item }">
-            <div @click="openDialog(item)">
-              {{ item.name }}
+    <div class="m-4 row">
+      <div class="col-sm-6 card">
+        <div class="card-body">
+          <h2>Estrutura</h2>
+          <v-treeview transition expand-icon="aa" item-key="id" :items="arvore" open-on-click>
+            <template slot="prepend" slot-scope="{ item }">
+              <a>{{ item.collection.tipo == "nivel" ? ">" : "o" }}</a>
+            </template>
+            <template slot="label" slot-scope="{ item }">
+              <div @click="openDialog(item)">
+                <div>{{ item.name }}</div>
+              </div>
+            </template>
+          </v-treeview>
+        </div>
+      </div>
+
+      <div class="card col-sm-6">
+        <div class="" v-if="itemOrForm">
+          <div class="card-body">
+            <h2>Perguntas</h2>
+            <h3>{{ itemAtual.name }}</h3>
+            <perguntasFormulario :docData="docData" />
+          </div>
+        </div>
+        <div class="" v-if="!itemOrForm">
+          <div class="card-body">
+            <h2>{{ itemAtual.name }}</h2>
+            <div>
+              <b-button
+              class="mb-1"
+                variant="primary"
+                :disabled="checkObjectEmpty(itemAtual)"
+                v-b-modal="'modal-prevent-closing'"
+              >Adicionar novo nível</b-button>
+              <b-button
+                variant="primary"
+                :disabled="checkObjectEmpty(itemAtual)"
+                v-b-modal="'modal-prevent-closing2'"
+              >Adicionar formulário</b-button>
+
+              <b-modal
+                title="Entre com o nome do novo nível"
+                id="modal-prevent-closing"
+                @ok="adicionarNovoNivel"
+              >
+                <b-form-input v-model="inputNivel" placeholder="Nível" class="mb-2"></b-form-input>
+              </b-modal>
+
+              <b-modal
+                title="Entre com o nome do novo formulário"
+                id="modal-prevent-closing2"
+                @ok="adicionarNovoForm"
+              >
+                <b-form-input v-model="inputForm" placeholder="Nome" class="mb-2"></b-form-input>
+              </b-modal>
             </div>
-          </template>
-        </v-treeview>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <div class="card mt-5" v-if="itemOrForm">
-      <div class="card-body">
-        <h1>Perguntas</h1>
-        <h2>{{ itemAtual.name }}</h2>
-        <perguntasFormulario :docData="docData" />
-      </div>
-    </div>
-    <div class="card mt-5" v-if="!itemOrForm">
-      <div class="card-body">
-      <h1>{{ itemAtual.name }}</h1>
-      <div class="pt-5 pl-1">
-        <b-button
-          variant="primary"
-          :disabled="checkObjectEmpty(itemAtual)"
-          v-b-modal="'modal-prevent-closing'"
-        >Adicionar novo nível</b-button>
-        <b-button
-          variant="primary"
-          :disabled="checkObjectEmpty(itemAtual)"
-          v-b-modal="'modal-prevent-closing2'"
-        >Adicionar formulário</b-button>
-
-        <b-modal
-          title="Entre com o nome do novo nível"
-          id="modal-prevent-closing"
-          @ok="adicionarNovoNivel"
-        >
-          <b-form-input v-model="inputNivel" placeholder="Nível" class="mb-2"></b-form-input>
-        </b-modal>
-
-        <b-modal
-          title="Entre com o nome do novo formulário"
-          id="modal-prevent-closing2"
-          @ok="adicionarNovoForm"
-        >
-          <b-form-input v-model="inputForm" placeholder="Nome" class="mb-2"></b-form-input>
-        </b-modal>
-      </div>
-    </div>
     </div>
   </div>
 </template>
@@ -100,7 +105,7 @@ export default {
       var instance = this;
       this.itemAtual = item;
       this.collection = item.collection;
-      console.log(item);
+
       if (item.collection.tipo == "formulario") {
         this.itemOrForm = true;
         this.db
