@@ -204,6 +204,19 @@ export default {
       this.usuarioAtual = row.item;
       this.modalDeletarShow = true;
     },
+    async usuarioExisteInativo(){
+      var retorno = Boolean;
+      await this.db
+        .collection("Usuarios")
+        .where("cpf", "==", this.model.cpf)
+        .where("ativo","==",true)
+        .get()
+        .then(a => {
+          retorno = a.empty;
+        });
+
+      return retorno;
+    },
     async validaSeUsuarioNaoExiste() {
       var retorno = Boolean;
       await this.db
