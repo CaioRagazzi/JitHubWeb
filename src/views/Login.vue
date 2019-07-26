@@ -63,6 +63,7 @@ export default {
     logar: function() {
       this.busy = true;
       let usuario = this.login + "@dominio.com.br";
+      
       firebase
         .auth()
         .signInWithEmailAndPassword(usuario, this.senha)
@@ -71,9 +72,9 @@ export default {
             this.validaPermissao();
           },
           err => {
+            console.log(err.message);            
             iziToast.warning({
               title: "Atenção",
-              // message: err.message,
               message: 'Erro ao realizar o login',
               position: "topRight"
             });

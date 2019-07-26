@@ -204,15 +204,19 @@ export default {
       this.usuarioAtual = row.item;
       this.modalDeletarShow = true;
     },
-    async usuarioExisteInativo(){
+    async validaSeUsuarioExisteInativo(){
       var retorno = Boolean;
       await this.db
         .collection("Usuarios")
         .where("cpf", "==", this.model.cpf)
-        .where("ativo","==",true)
+        .where("ativo","==",false)
         .get()
         .then(a => {
-          retorno = a.empty;
+          if (a.empty){
+            retorno = false
+          } else {
+            retorno = true
+          }
         });
 
       return retorno;
@@ -224,7 +228,28 @@ export default {
         .where("cpf", "==", this.model.cpf)
         .get()
         .then(a => {
-          retorno = a.empty;
+          if (a.empty){
+            retorno = true
+          } else {
+            retorno = false
+          }
+        });
+
+      return retorno;
+    },
+    async validaSeUsuarioExisteAtivo() {
+      var retorno = Boolean;
+      await this.db
+        .collection("Usuarios")
+        .where("cpf", "==", this.model.cpf)
+        .where("ativo", "==", true)
+        .get()
+        .then(a => {
+          if (a.empty){
+            retorno = false
+          } else {
+            retorno = true
+          }
         });
 
       return retorno;
@@ -245,9 +270,16 @@ export default {
         this.busy = false;
         return;
       }
-      var resposta = await this.validaSeUsuarioNaoExiste();
+      var usuarioExisteAtivo = await this.validaSeUsuarioExisteAtivo();
+      var usuarioExisteInativo = await this.validaSeUsuarioExisteInativo();
+      var usuarioNaoExiste = await this.validaSeUsuarioNaoExiste();
 
-      if (resposta == true) {
+      console.log('usuarioExisteAtivo', usuarioExisteAtivo);
+      console.log('usuarioExisteInativo', usuarioExisteInativo);
+      console.log('usuarioNaoExiste', usuarioNaoExiste);
+      
+
+      if (usuarioNaoExiste == true) {
         let usuario = this.model.cpf + "@dominio.com.br";
 
         firebase
@@ -261,7 +293,7 @@ export default {
                 position: "topRight"
               });
               instance.gravaUsuarioNoBanco();
-              instance.getAllUsers();
+              // instance.getAllUsers();
             },
             function(error) {
               // Handle Errors here.
@@ -275,13 +307,26 @@ export default {
               });
             }
           );
-      } else {
+      } else if (usuarioExisteInativo){
+
+        this.db
+        .collection("Usuarios")
+        .where("cpf", "==", this.model.cpf)
+        .get()
+        .then(a => {
+          this.db.collection("Usuarios").doc(a.docs[0].id).set(this.model)
+        });
+
+      } else if (usuarioExisteAtivo) {
+
         iziToast.warning({
           title: "Atenção",
           message: "Usuario já existe na base!",
           position: "topRight"
         });
+        this.busy = false;
         return;
+
       }
     },
     gravaUsuarioNoBanco() {
