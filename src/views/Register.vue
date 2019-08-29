@@ -15,7 +15,7 @@
               trim
             ></b-form-input>
             <b-form-invalid-feedback :state="validationCpf">O CPF deve conter 11 digitos</b-form-invalid-feedback>
-            <b-form-valid-feedback :state="validationCpf">Ok.</b-form-valid-feedback>
+            <b-form-valid-feedback :state="validationCpf">Ok</b-form-valid-feedback>
           </b-form-group>
 
           <b-form-group class="pr-4" id="fieldset-3" label="Email:" label-for="input-3">
@@ -31,7 +31,7 @@
           </b-form-group>
 
           <b-form-group class="pr-4" id="fieldset-5" label="Sobrenome:" label-for="input-5">
-            <b-form-input style="width:300px;" id="input-5" v-model="model.sobreNome" trim></b-form-input>
+            <b-form-input style="width:300px;" id="input-5" v-model="model.sobrenome" trim></b-form-input>
             <!-- <b-form-invalid-feedback :state="validationSobreNome">Favor digitar um sobrenome</b-form-invalid-feedback>
             <b-form-valid-feedback :state="validationSobreNome">Ok.</b-form-valid-feedback>-->
           </b-form-group>
@@ -48,11 +48,11 @@
               id="input-2"
               type="password"
               :state="validationSenha"
-              v-model="model.senha"
+              v-model="model.password"
               trim
             ></b-form-input>
             <b-form-invalid-feedback :state="validationSenha">{{ stringSenha }}</b-form-invalid-feedback>
-            <b-form-valid-feedback :state="validationSenha">Ok.</b-form-valid-feedback>
+            <b-form-valid-feedback :state="validationSenha">Ok</b-form-valid-feedback>
           </b-form-group>
 
           <b-form-group id="fieldset-6" label="Confirme a senha: *" label-for="input-6">
@@ -61,18 +61,24 @@
               id="input-6"
               type="password"
               :state="validationSenha"
-              v-model="model.confirmSenha"
+              v-model="model.confirmPassword"
               trim
             ></b-form-input>
             <b-form-invalid-feedback :state="validationSenha">{{ stringSenha }}</b-form-invalid-feedback>
-            <b-form-valid-feedback :state="validationSenha">Ok.</b-form-valid-feedback>
+            <b-form-valid-feedback :state="validationSenha">Ok</b-form-valid-feedback>
           </b-form-group>
         </b-form-row>
 
         <b-form-row>
           <b-form-group>
-            <b-spinner v-if="busy" label="Spinning"></b-spinner>
-            <b-button v-else @click="criarNovaConta" variant="primary">Criar</b-button>
+            <b-button
+              @click="criarNovaConta"
+              variant="primary"
+              style="min-width: 6rem; max-height: 3rem;"
+            >
+              Criar
+              <b-spinner small class="ml-2" v-if="busy" label="Spinning"></b-spinner>
+            </b-button>
           </b-form-group>
         </b-form-row>
       </div>
@@ -83,17 +89,28 @@
         <template
           slot="perfil"
           slot-scope="row"
-        >{{ row.item.perfil == 'admin' ? 'Administrador' : 'Usuario' }}</template>
+        >{{ row.item.perfil_id == 1 ? 'Administrador' : 'Usuario' }}</template>
         <template slot="action" slot-scope="row">
           <b-button
             v-b-tooltip.hover
-            @click="abrirModal(row)"
+            @click="abrirModalDelecao(row)"
             title="Excluir Usuario"
+            placement="right"
+            variant="outline-danger"
+            style="border: 0;"
+          >
+            <i class="fa fa-trash"></i>
+          </b-button>
+
+          <b-button
+            v-b-tooltip.hover
+            @click="abrirModalEdicao(row)"
+            title="Editar Usuario"
             placement="right"
             variant="outline-primary"
             style="border: 0;"
           >
-            <i class="fa fa-trash"></i>
+            <i class="fas fa-pencil-alt"></i>
           </b-button>
         </template>
         <div slot="table-busy" class="text-center text-danger my-2">
@@ -105,12 +122,14 @@
       <b-modal v-model="modalDeletarShow" title="Atenção" @ok="excluirUsuario">
         <p class="my-4">Tem certeza que deseja deletar o usuário com CPF "{{ usuarioAtual.cpf }}"?</p>
       </b-modal>
+      <b-modal v-model="modalEditarShow" title="Editar">
+        EDITAR
+      </b-modal>
     </div>
   </div>
 </template>
 <script>
 import Vue from "vue";
-import firebase from "firebase";
 import iziToast from "izitoast";
 import axios from "axios";
 
@@ -120,21 +139,21 @@ export default {
     return {
       usuarioAtual: {},
       modalDeletarShow: false,
+      modalEditarShow: false,
       busy: false,
       options: [
         { value: null, text: "Selecione" },
-        { value: "user", text: "Usuario" },
-        { value: "admin", text: "Administrador" }
+        { value: 2, text: "Usuario" },
+        { value: 1, text: "Administrador" }
       ],
       isBusy: false,
-      db: firebase.firestore(),
       model: {
         cpf: "",
-        senha: "",
-        confirmSenha: "",
+        password: "",
+        confirmPassword: "",
         email: "",
         nome: "",
-        sobreNome: "",
+        sobrenome: "",
         perfil: null,
         ativo: true
       },
@@ -142,7 +161,7 @@ export default {
         { key: "cpf", label: "cpf" },
         { key: "email", label: "E-mail" },
         { key: "nome", label: "Nome" },
-        { key: "sobreNome", label: "Sobrenome" },
+        { key: "sobrenome", label: "Sobrenome" },
         { key: "perfil", label: "Perfil" },
         { key: "action", label: "Ações" }
       ],
@@ -152,11 +171,11 @@ export default {
   computed: {
     stringSenha() {
       if (
-        this.model.senha.length < 6 &&
-        this.model.senha != this.model.confirmSenha
+        this.model.password.length < 6 &&
+        this.model.password != this.model.confirmPassword
       ) {
         return "A senha deve conter 6 ou mais caracteres";
-      } else if (this.model.senha != this.model.confirmSenha) {
+      } else if (this.model.password != this.model.confirmPassword) {
         return "A senha e a confirmação da senha deve ser iguais";
       }
     },
@@ -177,12 +196,12 @@ export default {
       return this.model.cpf.length == 11;
     },
     validationSenha() {
-      if (this.model.senha.length == 0) {
+      if (this.model.password.length == 0) {
         return undefined;
       }
       return (
-        this.model.senha.length >= 6 &&
-        this.model.senha == this.model.confirmSenha
+        this.model.password.length >= 6 &&
+        this.model.password == this.model.confirmPassword
       );
     }
   },
@@ -190,76 +209,40 @@ export default {
     this.getAllUsers();
   },
   methods: {
+    abrirModalEdicao(row){
+      console.log(row);
+      this.modalEditarShow = true;
+    },
     excluirUsuario() {
-      var teste = this.db
-        .collection("Usuarios")
-        .where("cpf", "==", this.usuarioAtual.cpf)
-        .get()
-        .then(a => {
-          this.db
-            .collection("Usuarios")
-            .doc(a.docs[0].id)
-            .update({
-              ativo: false
-            });
+      var config = {
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+      };
+
+      axios
+        .delete(
+          "https://jithub.firebaseapp.com/api/user/" + this.usuarioAtual.cpf,
+          config
+        )
+        .then(response => {
+          iziToast.success({
+            title: "Sucesso",
+            message:
+              "Usuário com cpf " +
+              this.usuarioAtual.cpf +
+              " excluído com sucesso!",
+            position: "topRight"
+          });
+          this.getAllUsers();
+        })
+        .catch(error => {
+          console.log(error);
         });
     },
-    abrirModal(row) {
+    abrirModalDelecao(row) {
       this.usuarioAtual = row.item;
       this.modalDeletarShow = true;
     },
-    async validaSeUsuarioExisteInativo() {
-      var retorno = Boolean;
-      await this.db
-        .collection("Usuarios")
-        .where("cpf", "==", this.model.cpf)
-        .where("ativo", "==", false)
-        .get()
-        .then(a => {
-          if (a.empty) {
-            retorno = false;
-          } else {
-            retorno = true;
-          }
-        });
-
-      return retorno;
-    },
-    async validaSeUsuarioNaoExiste() {
-      var retorno = Boolean;
-      await this.db
-        .collection("Usuarios")
-        .where("cpf", "==", this.model.cpf)
-        .get()
-        .then(a => {
-          if (a.empty) {
-            retorno = true;
-          } else {
-            retorno = false;
-          }
-        });
-
-      return retorno;
-    },
-    async validaSeUsuarioExisteAtivo() {
-      var retorno = Boolean;
-      await this.db
-        .collection("Usuarios")
-        .where("cpf", "==", this.model.cpf)
-        .where("ativo", "==", true)
-        .get()
-        .then(a => {
-          if (a.empty) {
-            retorno = false;
-          } else {
-            retorno = true;
-          }
-        });
-
-      return retorno;
-    },
     async criarNovaConta() {
-      
       this.busy = true;
       if (
         this.validationCpf == false ||
@@ -274,88 +257,56 @@ export default {
         this.busy = false;
         return;
       }
-      var usuarioExisteAtivo = await this.validaSeUsuarioExisteAtivo();
-      var usuarioExisteInativo = await this.validaSeUsuarioExisteInativo();
-      var usuarioNaoExiste = await this.validaSeUsuarioNaoExiste();
 
-      console.log("usuarioExisteAtivo", usuarioExisteAtivo);
-      console.log("usuarioExisteInativo", usuarioExisteInativo);
-      console.log("usuarioNaoExiste", usuarioNaoExiste);
+      var config = {
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+      };
 
-      if (usuarioNaoExiste == true) {
-        let usuario = this.model.cpf + "@dominio.com.br";
-
-        firebase
-          .auth()
-          .createUserWithEmailAndPassword(usuario, this.model.senha)
-          .then(
-            function(user) {
-              iziToast.success({
-                title: "Ok",
-                message: "Conta criada com sucesso!",
-                position: "topRight"
-              });
-              instance.gravaUsuarioNoBanco();
-              // instance.getAllUsers();
-            },
-            function(error) {
-              // Handle Errors here.
-              var errorCode = error.code;
-              var errorMessage = error.message;
-              iziToast.warning({
-                title: "Atenção",
-                message:
-                  "Erro ao criar usuário, favor contatar o administrador do sistema!",
-                position: "topRight"
-              });
-            }
-          );
-      } else if (usuarioExisteInativo) {
-        this.db
-          .collection("Usuarios")
-          .where("cpf", "==", this.model.cpf)
-          .get()
-          .then(a => {
-            this.db
-              .collection("Usuarios")
-              .doc(a.docs[0].id)
-              .set(this.model);
-          });
-      } else if (usuarioExisteAtivo) {
-        iziToast.warning({
-          title: "Atenção",
-          message: "Usuario já existe na base!",
-          position: "topRight"
+      await axios
+        .post(
+          "https://jithub.firebaseapp.com/api/user/create",
+          this.model,
+          config
+        )
+        .then(response => {
+          if (response.data.message == "User already exists") {
+            iziToast.warning({
+              title: "Atenção",
+              message: "Usuário já existe!",
+              position: "topRight"
+            });
+            this.busy = false;
+            return
+          }
+          this.busy = false;
+          this.getAllUsers();
+        })
+        .catch(error => {
+          console.log(error.message);
+          this.busy = false;
         });
-        this.busy = false;
-        return;
-      }
-    },
-    gravaUsuarioNoBanco() {
-      this.db
-        .collection("Usuarios")
-        .doc()
-        .set(this.model);
 
       this.model.cpf = "";
-      this.model.senha = "";
+      this.model.password = "";
       this.model.email = "";
       this.model.nome = "";
       this.model.sobreNome = "";
-      this.model.confirmSenha = "";
+      this.model.confirmPassword = "";
       this.model.perfil = null;
     },
     getAllUsers() {
       this.isBusy = true;
 
       var config = {
-        headers: { "Authorization": "Bearer " + localStorage.getItem('token') }
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
       };
 
-      axios.get("https://jithub.firebaseapp.com/api/user/all", config).then(response => {
-        this.users = response.data
-        this.isBusy = false;
-      });
+      axios
+        .get("https://jithub.firebaseapp.com/api/user/all", config)
+        .then(response => {
+          this.users = response.data;
+          this.isBusy = false;
+        });
     }
   }
 };

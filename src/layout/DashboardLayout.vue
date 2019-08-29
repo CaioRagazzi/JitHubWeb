@@ -45,7 +45,6 @@
 import DashboardNavbar from "./DashboardNavbar.vue";
 import ContentFooter from "./ContentFooter.vue";
 import { FadeTransition } from "vue2-transitions";
-import firebase from "firebase";
 
 export default {
   components: {
@@ -60,18 +59,8 @@ export default {
   },
   methods: {
     deslogar() {
-      var instance = this;
-      firebase
-        .auth()
-        .signOut()
-        .then(
-          function() {
-            instance.$router.replace("login");
-          },
-          function(error) {
-            console.log(error);
-          }
-        );
+      localStorage.clear()
+      this.$router.replace("login");
     },
     toggleSidebar() {
       if (this.$sidebar.showSidebar) {

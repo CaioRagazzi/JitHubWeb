@@ -94,7 +94,6 @@
 </template>
 
 <script>
-import firebase from "firebase";
 import { relatorioHttp } from "../api/relatorio";
 
 export default {

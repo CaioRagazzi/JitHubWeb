@@ -66,7 +66,6 @@
 </template>
 
 <script>
-import firebase from "firebase";
 
 import perguntasFormulario from "@/components/perguntasFormulario.vue";
 

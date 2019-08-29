@@ -1,12 +1,3 @@
-<!--<template>
-     <div class="login">
-         <h3>Login</h3>
-         <input type="text" v-model="login" placeholder="Login"><br>
-         <input type="password" v-model="senha" placeholder="Senha"><br>
-         <button @click="logar">Logar</button>
-         <p><router-link to="/signup"> Criar conta </router-link></p>
-     </div>
- </template>-->
  <template>
   <div class="row justify-content-center">
     <div class="col-lg-5 col-md-7">
@@ -29,8 +20,9 @@
           ></base-input>
 
           <div class="text-center">
-            <b-spinner v-if="busy" label="Spinning"></b-spinner>
-            <base-button v-else v-on:click="logar" type="primary" class="my-4">Entrar</base-button>
+            <base-button v-on:click="logar" :disabled="busy" type="primary" class="my-4" style="min-width: 8rem; max-height: 3rem;">
+              Entrar <b-spinner class="ml-2" small v-if="busy" label="Spinning"></b-spinner>
+            </base-button>
           </div>
         </div>
       </div>
@@ -59,7 +51,7 @@ export default {
     };
   },
   methods: {
-    logar: function() {
+    logar() {
       this.busy = true;
 
       var body = {
@@ -70,10 +62,17 @@ export default {
       axios
         .post("https://jithub.firebaseapp.com/api/user/login", body)
         .then(response => {
-          localStorage.setItem('token', response.data.token)
-          this.$router.replace("inventario");
-          console.log('ok');
-          
+          if (response.data.user.perfil_id == 1) {
+            localStorage.setItem("token", response.data.token);
+            this.$router.replace("inventario");
+          } else {
+            iziToast.warning({
+              title: "Atenção",
+              message: "Você não possui permissão para acessar esse módulo!",
+              position: "topRight"
+            });
+            this.busy = false;
+          }
         })
         .catch(error => {
           iziToast.warning({
@@ -83,42 +82,7 @@ export default {
           });
           this.busy = false;
         });
-    },
-    validaPermissao() {
-      this.db
-        .collection("Usuarios")
-        .where("cpf", "==", `${this.login}`)
-        .get()
-        .then(a => {
-          if (
-            a.docs[0].data().perfil == "admin" &&
-            a.docs[0].data().ativo == true
-          ) {
-            this.$router.replace("inventario");
-          } else {
-            iziToast.warning({
-              title: "Atenção",
-              message: "Você não possui permissão para acessar esse módulo!",
-              position: "topRight"
-            });
-            this.deslogar();
-            this.busy = false;
-          }
-        });
-    },
-    deslogar() {
-      var instance = this;
-      firebase
-        .auth()
-        .signOut()
-        .then(
-          function() {
-            (instance.login = ""), (instance.senha = "");
-          },
-          function(error) {
-            console.log(error);
-          }
-        );
+        this.$router.replace("inventario");
     }
   }
 };

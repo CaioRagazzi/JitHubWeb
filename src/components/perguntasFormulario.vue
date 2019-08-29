@@ -31,8 +31,6 @@
 
 <script>
 
-import firebase from 'firebase'
-
 export default {
     async created() {
         var instance = this

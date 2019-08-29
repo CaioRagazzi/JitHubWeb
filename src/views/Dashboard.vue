@@ -53,7 +53,6 @@
 <script>
 
   import Vue from 'vue'
-  import firebase from 'firebase'
   import perguntasFormulario from '@/components/perguntasFormulario.vue'
 
   export default {
