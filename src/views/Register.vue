@@ -112,6 +112,7 @@
 import Vue from "vue";
 import firebase from "firebase";
 import iziToast from "izitoast";
+import axios from "axios";
 
 export default {
   name: "register",
@@ -195,27 +196,30 @@ export default {
         .where("cpf", "==", this.usuarioAtual.cpf)
         .get()
         .then(a => {
-          this.db.collection("Usuarios").doc(a.docs[0].id).update({
-            ativo: false
-          })
+          this.db
+            .collection("Usuarios")
+            .doc(a.docs[0].id)
+            .update({
+              ativo: false
+            });
         });
     },
     abrirModal(row) {
       this.usuarioAtual = row.item;
       this.modalDeletarShow = true;
     },
-    async validaSeUsuarioExisteInativo(){
+    async validaSeUsuarioExisteInativo() {
       var retorno = Boolean;
       await this.db
         .collection("Usuarios")
         .where("cpf", "==", this.model.cpf)
-        .where("ativo","==",false)
+        .where("ativo", "==", false)
         .get()
         .then(a => {
-          if (a.empty){
-            retorno = false
+          if (a.empty) {
+            retorno = false;
           } else {
-            retorno = true
+            retorno = true;
           }
         });
 
@@ -228,10 +232,10 @@ export default {
         .where("cpf", "==", this.model.cpf)
         .get()
         .then(a => {
-          if (a.empty){
-            retorno = true
+          if (a.empty) {
+            retorno = true;
           } else {
-            retorno = false
+            retorno = false;
           }
         });
 
@@ -245,17 +249,17 @@ export default {
         .where("ativo", "==", true)
         .get()
         .then(a => {
-          if (a.empty){
-            retorno = false
+          if (a.empty) {
+            retorno = false;
           } else {
-            retorno = true
+            retorno = true;
           }
         });
 
       return retorno;
     },
     async criarNovaConta() {
-      var instance = this;
+      
       this.busy = true;
       if (
         this.validationCpf == false ||
@@ -274,10 +278,9 @@ export default {
       var usuarioExisteInativo = await this.validaSeUsuarioExisteInativo();
       var usuarioNaoExiste = await this.validaSeUsuarioNaoExiste();
 
-      console.log('usuarioExisteAtivo', usuarioExisteAtivo);
-      console.log('usuarioExisteInativo', usuarioExisteInativo);
-      console.log('usuarioNaoExiste', usuarioNaoExiste);
-      
+      console.log("usuarioExisteAtivo", usuarioExisteAtivo);
+      console.log("usuarioExisteInativo", usuarioExisteInativo);
+      console.log("usuarioNaoExiste", usuarioNaoExiste);
 
       if (usuarioNaoExiste == true) {
         let usuario = this.model.cpf + "@dominio.com.br";
@@ -307,18 +310,18 @@ export default {
               });
             }
           );
-      } else if (usuarioExisteInativo){
-
+      } else if (usuarioExisteInativo) {
         this.db
-        .collection("Usuarios")
-        .where("cpf", "==", this.model.cpf)
-        .get()
-        .then(a => {
-          this.db.collection("Usuarios").doc(a.docs[0].id).set(this.model)
-        });
-
+          .collection("Usuarios")
+          .where("cpf", "==", this.model.cpf)
+          .get()
+          .then(a => {
+            this.db
+              .collection("Usuarios")
+              .doc(a.docs[0].id)
+              .set(this.model);
+          });
       } else if (usuarioExisteAtivo) {
-
         iziToast.warning({
           title: "Atenção",
           message: "Usuario já existe na base!",
@@ -326,7 +329,6 @@ export default {
         });
         this.busy = false;
         return;
-
       }
     },
     gravaUsuarioNoBanco() {
@@ -345,18 +347,15 @@ export default {
     },
     getAllUsers() {
       this.isBusy = true;
-      var instance = this;
-      this.db
-        .collection("Usuarios")
-        .where("ativo", "==", true)
-        .onSnapshot(function(querySnapshot) {
-          instance.users = [];
-          querySnapshot.forEach(function(docs) {
-            instance.users.push(docs.data());
-          });
-          instance.isBusy = false;
-          instance.busy = false;
-        });
+
+      var config = {
+        headers: { "Authorization": "Bearer " + localStorage.getItem('token') }
+      };
+
+      axios.get("https://jithub.firebaseapp.com/api/user/all", config).then(response => {
+        this.users = response.data
+        this.isBusy = false;
+      });
     }
   }
 };

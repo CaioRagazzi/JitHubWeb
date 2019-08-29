@@ -40,10 +40,10 @@
 
 
 <script>
-import firebase from "firebase";
 import BaseInput from "@/components/BaseInput.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import iziToast from "izitoast";
+import axios from "axios";
 
 export default {
   components: {
@@ -53,7 +53,6 @@ export default {
   name: "login",
   data() {
     return {
-      db: firebase.firestore(),
       busy: false,
       login: "",
       senha: ""
@@ -62,25 +61,28 @@ export default {
   methods: {
     logar: function() {
       this.busy = true;
-      let usuario = this.login + "@dominio.com.br";
-      
-      firebase
-        .auth()
-        .signInWithEmailAndPassword(usuario, this.senha)
-        .then(
-          user => {
-            this.validaPermissao();
-          },
-          err => {
-            console.log(err.message);            
-            iziToast.warning({
-              title: "Atenção",
-              message: 'Erro ao realizar o login',
-              position: "topRight"
-            });
-            this.busy = false;
-          }
-        );
+
+      var body = {
+        cpf: this.login,
+        password: this.senha
+      };
+
+      axios
+        .post("https://jithub.firebaseapp.com/api/user/login", body)
+        .then(response => {
+          localStorage.setItem('token', response.data.token)
+          this.$router.replace("inventario");
+          console.log('ok');
+          
+        })
+        .catch(error => {
+          iziToast.warning({
+            title: "Atenção",
+            message: "Login e/ou senha incorretos!",
+            position: "topRight"
+          });
+          this.busy = false;
+        });
     },
     validaPermissao() {
       this.db
@@ -88,7 +90,10 @@ export default {
         .where("cpf", "==", `${this.login}`)
         .get()
         .then(a => {
-          if (a.docs[0].data().perfil == "admin" && a.docs[0].data().ativo == true) {
+          if (
+            a.docs[0].data().perfil == "admin" &&
+            a.docs[0].data().ativo == true
+          ) {
             this.$router.replace("inventario");
           } else {
             iziToast.warning({
@@ -108,8 +113,7 @@ export default {
         .signOut()
         .then(
           function() {
-            instance.login = "",
-            instance.senha = ""
+            (instance.login = ""), (instance.senha = "");
           },
           function(error) {
             console.log(error);
