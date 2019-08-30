@@ -2,7 +2,6 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import AuthLayout from './layout/AuthLayout.vue'
 import DashboardLayout from '@/layout/DashboardLayout'
-import Register from '@/views/Register'
 
 Vue.use(Router)
 
@@ -84,7 +83,7 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
   const publicPages = ['/', '/login'];
-  
+
   const authRequired = !publicPages.includes(to.path);
   let loggedIn = localStorage.getItem('token');
 
@@ -93,7 +92,7 @@ router.beforeEach((to, from, next) => {
   }
 
   next();
-  
+
 });
 
 export default router;

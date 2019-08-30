@@ -83,11 +83,8 @@
         <ul class="navbar-nav">
           <slot name="links"></slot>
         </ul>
-        <!--Divider-->
-        <hr class="my-3" />
-        <!--Heading-->
+        <!-- <hr class="my-3" />
         <h6 class="navbar-heading text-muted">Documentation</h6>
-        <!--Navigation-->
         <ul class="navbar-nav mb-md-3">
           <li class="nav-item">
             <a
@@ -113,7 +110,7 @@
               <i class="ni ni-ui-04"></i> Components
             </a>
           </li>
-        </ul>
+        </ul> -->
       </div>
     </div>
   </nav>

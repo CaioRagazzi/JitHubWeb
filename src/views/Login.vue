@@ -62,7 +62,7 @@ export default {
       axios
         .post("https://jithub.firebaseapp.com/api/user/login", body)
         .then(response => {
-          if (response.data.user.perfil_id == 1) {
+          if (response.data.user.perfil_id == 1 || response.data.user.perfil_id == 3) {
             localStorage.setItem("token", response.data.token);
             this.$router.replace("inventario");
           } else {

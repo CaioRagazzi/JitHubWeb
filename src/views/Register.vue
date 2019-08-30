@@ -89,7 +89,7 @@
         <template
           slot="perfil"
           slot-scope="row"
-        >{{ row.item.perfil_id == 1 ? 'Administrador' : 'Usuario' }}</template>
+        >{{ row.item.perfil_id == 1 ? 'Administrador' : row.item.perfil_id == 3 ? 'Designer' : 'Usuario' }}</template>
         <template slot="action" slot-scope="row">
           <b-button
             v-b-tooltip.hover
@@ -143,8 +143,9 @@ export default {
       busy: false,
       options: [
         { value: null, text: "Selecione" },
+        { value: 1, text: "Administrador" },
         { value: 2, text: "Usuario" },
-        { value: 1, text: "Administrador" }
+        { value: 3, text: "Designer" }
       ],
       isBusy: false,
       model: {
