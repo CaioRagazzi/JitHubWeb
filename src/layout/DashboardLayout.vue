@@ -11,37 +11,6 @@
             </template>
           </a>
         </li>
-        <!-- <sidebar-menu class="" :relative="true" :menu="menu" /> -->
-
-        <!-- <sidebar-item
-          :link="{
-            name: 'Listagem Inventário',
-            icon: 'ni ni-tv-2 text-primary',
-            path: '/inventario'
-          }"
-        />
-
-        <sidebar-item
-          :link="{name: 'Relatório', icon: 'ni ni-key-25 text-info', path: '/respostas'}"
-        />
-        <sidebar-item
-          :link="{name: 'Perguntas', icon: 'ni ni-planet text-blue', path: '/perguntas'}"
-        />
-        <sidebar-item
-          :link="{name: 'Criar nova conta', icon: 'ni ni-circle-08 text-pink', path: '/register'}"
-        />
-        <sidebar-item
-          v-if="isAdmin"
-          :link="{name: 'Administração', icon: 'ni ni-circle-08 text-pink', path: '/administracao'}"
-        />
-        <li class="nav-item">
-          <a style="cursor: pointer;" class="nav-link" @click="deslogar">
-            <template>
-              <i class="ni ni-button-power text-pink"></i>
-              <a class="nav-link-text">Sair</a>
-            </template>
-          </a>
-        </li>-->
       </template>
     </side-bar>
     <div class="main-content" :data="sidebarBackground">
@@ -80,18 +49,22 @@ export default {
         child: [
           {
             title: "Usuários",
+            href: "/administracao/usuarios",
             class: "nav-link ml-5"
           },
           {
             title: "Organização",
+            href: '/administracao/organizacao',
             class: "nav-link ml-5"
           },
           {
             title: "Área",
+            href: '/administracao/area',
             class: "nav-link ml-5"
           },
           {
             title: "Disciplina",
+            href: '/administracao/disciplina',
             class: "nav-link ml-5"
           }
         ]
@@ -108,8 +81,7 @@ export default {
             },
             {
               title: "Usuario",
-              class: "nav-link ml-5",
-              href: "/register"
+              class: "nav-link ml-5"
             }
           ]
         }
@@ -147,4 +119,34 @@ export default {
 };
 </script>
 <style lang="scss">
+.v-sidebar-menu {
+
+  & .expand-enter-active,
+  & .expand-leave-active {
+    transition: height 0.35s ease;
+    overflow: hidden;
+  }
+
+  & .expand-enter,
+  & .expand-leave-to {
+    height: 0 !important;
+  }
+
+  & .slide-animation-enter-active {
+    animation: slide-animation 0.2s;
+  }
+
+  & .slide-animation-leave-active {
+    animation: slide-animation 0.2s reverse;
+  }
+
+  @keyframes slide-animation {
+    0% {
+      width: 0%;
+    }
+    100% {
+      width: 100%;
+    }
+  }
+}
 </style>

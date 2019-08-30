@@ -21,6 +21,36 @@ const router = new Router({
       ]
     },
     {
+      path: '/administracao',
+      redirect: 'administracao',
+      component: DashboardLayout,
+      meta: {
+        requiresAuth: true
+      },
+      children: [
+        {
+          path: '/administracao/organizacao',
+          name: 'organizacao',
+          component: () => import(/* webpackChunkName: "demo" */ './views/administracao/organizacao.vue')
+        },
+        {
+          path: '/administracao/usuarios',
+          name: 'organizacao',
+          component: () => import(/* webpackChunkName: "demo" */ './views/administracao/usuarios.vue')
+        },
+        {
+          path: '/administracao/disciplina',
+          name: 'organizacao',
+          component: () => import(/* webpackChunkName: "demo" */ './views/administracao/disciplina.vue')
+        },
+        {
+          path: '/administracao/area',
+          name: 'organizacao',
+          component: () => import(/* webpackChunkName: "demo" */ './views/administracao/area.vue')
+        }
+      ]
+    },
+    {
       path: '/',
       redirect: 'inventario',
       component: DashboardLayout,
@@ -28,14 +58,6 @@ const router = new Router({
         requiresAuth: true
       },
       children: [
-        // {
-        //   path: '/dashboard',
-        //   name: 'dashboard',
-        //   // route level code-splitting
-        //   // this generates a separate chunk (about.[hash].js) for this route
-        //   // which is lazy-loaded when the route is visited.
-        //   component: () => import(/* webpackChunkName: "demo" */ './views/Dashboard.vue')
-        // },
         {
           path: '/icons',
           name: 'icons',
