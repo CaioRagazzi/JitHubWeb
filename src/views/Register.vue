@@ -211,7 +211,6 @@ export default {
   },
   methods: {
     abrirModalEdicao(row){
-      console.log(row);
       this.modalEditarShow = true;
     },
     excluirUsuario() {

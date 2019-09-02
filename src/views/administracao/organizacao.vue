@@ -10,9 +10,14 @@
               style="width:300px;"
               id="input-1"
               placeholder="Nome da organização"
+              :state="validationNome"
               v-model="model.nome"
               trim
             ></b-form-input>
+            <b-form-invalid-feedback
+              :state="validationNome"
+            >O Nome da Organização não pode ser vazio</b-form-invalid-feedback>
+            <b-form-valid-feedback :state="validationNome">Ok</b-form-valid-feedback>
           </b-form-group>
 
           <b-form-group class="pr-4" id="fieldset-3" label="Endereço:" label-for="input-3">
@@ -20,9 +25,14 @@
               style="width:300px;"
               id="input-3"
               placeholder="Endereço da organização"
+              :state="validationEndereco"
               v-model="model.endereco"
               trim
             ></b-form-input>
+            <b-form-invalid-feedback
+              :state="validationEndereco"
+            >O Endreço da Organização não pode ser vazio</b-form-invalid-feedback>
+            <b-form-valid-feedback :state="validationEndereco">Ok</b-form-valid-feedback>
           </b-form-group>
 
           <b-form-group class="pr-4" id="fieldset-4" label="Responsável:" label-for="input-4">
@@ -30,9 +40,14 @@
               style="width:300px;"
               id="input-4"
               placeholder="Responsável pela organização"
+              :state="validationResponsavel"
               v-model="model.responsavel"
               trim
             ></b-form-input>
+            <b-form-invalid-feedback
+              :state="validationResponsavel"
+            >O Responsável da Organização não pode ser vazio</b-form-invalid-feedback>
+            <b-form-valid-feedback :state="validationResponsavel">Ok</b-form-valid-feedback>
           </b-form-group>
 
           <b-form-group class="pr-4" id="fieldset-5" label="Contato:" label-for="input-5">
@@ -40,9 +55,14 @@
               style="width:300px;"
               id="input-5"
               placeholder="Contato da organização"
+              :state="validationContato"
               v-model="model.contato"
               trim
             ></b-form-input>
+            <b-form-invalid-feedback
+              :state="validationContato"
+            >O Contato da Organização não pode ser vazio</b-form-invalid-feedback>
+            <b-form-valid-feedback :state="validationContato">Ok</b-form-valid-feedback>
           </b-form-group>
         </b-form-row>
 
@@ -52,9 +72,10 @@
               @click="criarNovaOrganizacao"
               variant="primary"
               style="min-width: 6rem; max-height: 3rem;"
+              :disabled="buttonCriarIsBusy"
             >
               Criar
-              <b-spinner small class="ml-2" v-if="busy" label="Spinning"></b-spinner>
+              <b-spinner small class="ml-2" v-if="buttonCriarIsBusy" label="Spinning"></b-spinner>
             </b-button>
           </b-form-group>
         </b-form-row>
@@ -62,12 +83,27 @@
     </div>
 
     <div class="pt-1">
-      <!-- Table -->
+      <b-table
+        striped
+        hover
+        :items="organizacoes"
+        :fields="fields"
+        :busy="tableIsBusy"
+        class="mt-5"
+      >
+        <div slot="table-busy" class="text-center text-danger my-2">
+          <b-spinner class="align-middle mr-1"></b-spinner>
+          <strong>Carregando...</strong>
+        </div>
+      </b-table>
     </div>
   </div>
 </template>
 
 <script>
+import axios from "axios";
+import iziToast from "izitoast";
+
 export default {
   data() {
     return {
@@ -77,12 +113,114 @@ export default {
         responsavel: "",
         contato: ""
       },
-      busy: false
+      tableIsBusy: false,
+      buttonCriarIsBusy: false,
+      organizacoes: [],
+      fields: [
+        { key: "org_nome", label: "Nome" },
+        { key: "endereco", label: "Endereco" },
+        { key: "responsavel", label: "Responsável" },
+        { key: "contato", label: "Contat" }
+      ]
     };
   },
-  methods: {
-      criarNovaOrganizacao(){
+  created() {
+    this.getAllOrganizacoes();
+  },
+  computed: {
+    validationNome() {
+      if (this.model.nome.length == 0) {
+        return undefined;
       }
+      return this.model.nome.length > 0;
+    },
+    validationEndereco() {
+      if (this.model.endereco == 0) {
+        return undefined;
+      }
+      return this.model.endereco.length > 0;
+    },
+    validationResponsavel() {
+      if (this.model.responsavel == 0) {
+        return undefined;
+      }
+      return this.model.responsavel.length > 0;
+    },
+    validationContato() {
+      if (this.model.contato == 0) {
+        return undefined;
+      }
+      return this.model.contato.length > 0;
+    }
+  },
+  methods: {
+    async criarNovaOrganizacao() {
+      this.buttonCriarIsBusy = true;
+      if (
+        this.validationNome == false ||
+        this.validationNome == undefined ||
+        this.validationEndereco == false ||
+        this.validationEndereco == undefined ||
+        this.validationResponsavel == false ||
+        this.validationResponsavel == undefined ||
+        this.validationContato == false ||
+        this.validationContato == undefined
+      ) {
+        iziToast.warning({
+          title: "Atenção",
+          message: "Todos os campos obrigatórios devem estar preenchidos!",
+          position: "topRight"
+        });
+        this.buttonCriarIsBusy = false;
+        return;
+      }
+
+      var config = {
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+      };
+
+      await axios
+        .post(
+          "https://jithub.firebaseapp.com/api/organizacao/create",
+          this.model,
+          config
+        )
+        .then(response => {
+          if (response.data.message == "Organizacao already exists") {
+            iziToast.warning({
+              title: "Atenção",
+              message: "Organização já existe!",
+              position: "topRight"
+            });
+            this.buttonCriarIsBusy = false;
+            return;
+          }
+          this.model.nome = "";
+          this.model.endereco = "",
+          this.model.responsavel = "",
+          this.model.contato = "";
+          this.buttonCriarIsBusy = false;
+          this.getAllOrganizacoes();
+        })
+        .catch(error => {
+          console.log(error.message);
+          this.buttonCriarIsBusy = false;
+        });
+    },
+    getAllOrganizacoes() {
+      this.tableIsBusy = true;
+
+      var config = {
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+      };
+
+      axios
+        .get("https://jithub.firebaseapp.com/api/organizacao/all", config)
+        .then(response => {
+          this.organizacoes = response.data;
+          this.tableIsBusy = false;
+        });
+    }
   }
 };
 </script>
