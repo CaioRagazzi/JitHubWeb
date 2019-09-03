@@ -23,17 +23,82 @@
           >
             <i class="fas fa-pencil-alt"></i>
           </b-button>
+          <b-button
+            v-b-tooltip.hover
+            @click="abrirModalDelecao(row)"
+            title="Excluir Area"
+            placement="right"
+            variant="outline-danger"
+            style="border: 0;"
+          >
+            <i class="fa fa-trash"></i>
+          </b-button>
         </template>
       </b-table>
+
+      <b-modal
+        ref="modalDeletar"
+        title="Atenção"
+        :no-close-on-esc="buttonExcluirIsBusy"
+        :no-close-on-backdrop="buttonExcluirIsBusy"
+        :hide-header-close="buttonExcluirIsBusy"
+      >
+        <p
+          class="my-4"
+        >Tem certeza que deseja deletar a disciplina "{{ disciplinaAtual.disc_nome }}"?</p>
+
+        <div slot="modal-footer" class="w-100">
+          <b-button
+            :disabled="buttonExcluirIsBusy"
+            variant="primary"
+            style="min-width: 6rem; max-height: 3rem;"
+            size="md"
+            class="float-right"
+            @click="excluirDisciplina"
+          >
+            OK
+            <b-spinner small class="ml-2" v-if="buttonExcluirIsBusy" label="Spinning"></b-spinner>
+          </b-button>
+          <b-button
+            :disabled="buttonExcluirIsBusy"
+            variant="danger"
+            size="md"
+            class="mr-2 float-right"
+            @click="fecharModalDeletar"
+          >Cancelar</b-button>
+        </div>
+      </b-modal>
+
       <b-modal
         ref="modalDisciplina"
         size="lg"
         title=" Disciplina"
         @hide="resetModel"
-        ok-title="Salvar"
-        cancel-title="Cancelar"
-        hide-footer
+        :no-close-on-esc="buttonCriarIsBusy"
+        :no-close-on-backdrop="buttonCriarIsBusy"
+        :hide-header-close="buttonCriarIsBusy"
       >
+        <div slot="modal-footer" class="w-100">
+          <b-button
+            :disabled="buttonCriarIsBusy"
+            variant="primary"
+            style="min-width: 6rem; max-height: 3rem;"
+            size="md"
+            class="float-right"
+            @click="atualizarSalvar"
+          >
+            OK
+            <b-spinner small class="ml-2" v-if="buttonCriarIsBusy" label="Spinning"></b-spinner>
+          </b-button>
+          <b-button
+            :disabled="buttonCriarIsBusy"
+            variant="danger"
+            size="md"
+            class="mr-2 float-right"
+            @click="fecharModalEditar"
+          >Cancelar</b-button>
+        </div>
+
         <div class="card">
           <div class="card-body">
             <h2>{{ titleModal }}</h2>
@@ -70,19 +135,6 @@
                 <b-form-valid-feedback :state="validationArea">Ok</b-form-valid-feedback>
               </b-form-group>
             </b-form-row>
-
-            <b-form-row>
-              <b-form-group>
-                <b-button
-                  @click="atualizarSalvar"
-                  variant="primary"
-                  style="min-width: 6rem; max-height: 3rem;"
-                >
-                  Salvar
-                  <b-spinner small class="ml-2" v-if="buttonCriarIsBusy" label="Spinning"></b-spinner>
-                </b-button>
-              </b-form-group>
-            </b-form-row>
           </div>
         </div>
       </b-modal>
@@ -97,6 +149,8 @@ import iziToast from "izitoast";
 export default {
   data() {
     return {
+      disciplinaAtual: {},
+      buttonExcluirIsBusy: false,
       model: {
         nome: "",
         area_id: 0
@@ -134,6 +188,48 @@ export default {
     this.getAllDisciplinas();
   },
   methods: {
+    excluirDisciplina() {
+      this.buttonExcluirIsBusy = true;
+      var config = {
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+      };
+
+      axios
+        .delete(
+          "https://jithub.firebaseapp.com/api/disciplina/" + this.disciplinaAtual.disc_id,
+          config
+        )
+        .then(response => {
+          if (response.data.message == "Disciplina it is in use") {
+            iziToast.warning({
+              title: "Atenção",
+              message: "Disciplina já está em uso!",
+              position: "topRight"
+            });
+            this.buttonExcluirIsBusy = false;
+            return;
+          }
+          this.getAllDisciplinas();
+          this.$refs["modalDeletar"].hide();
+          this.buttonExcluirIsBusy = false;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    fecharModalEditar() {
+      this.$refs["modalDisciplina"].hide();
+    },
+    abrirModalDelecao(row) {
+      this.disciplinaAtual = row.item;
+      this.$refs["modalDeletar"].show();
+    },
+    fecharModalDeletar() {
+      this.$refs["modalDeletar"].hide();
+    },
+    excluirArea() {
+      console.log(this.disciplinaAtual);
+    },
     atualizarSalvar() {
       if (this.atualizarCriar == "Criar") {
         this.criarNovaDisciplina();
@@ -150,7 +246,7 @@ export default {
         this.atualizarCriar = "Atualizar";
         this.model.area_id = item.area_id;
         this.model.nome = item.disc_nome;
-        this.model.disc_id = item.disc_id
+        this.model.disc_id = item.disc_id;
       }
       this.$refs["modalDisciplina"].show();
     },
@@ -231,13 +327,13 @@ export default {
           this.tableIsBusy = false;
         });
     },
-    resetModel(){
+    resetModel() {
       this.model = {
         nome: "",
         area_id: 0
-      }
+      };
     },
-    async atualizaDisciplina(){
+    async atualizaDisciplina() {
       this.buttonCriarIsBusy = true;
       if (
         this.validationNome == false ||
@@ -284,7 +380,7 @@ export default {
         .catch(error => {
           console.log(error.message);
           this.buttonCriarIsBusy = false;
-        });      
+        });
     }
   }
 };

@@ -16,25 +16,88 @@
           <b-button
             v-b-tooltip.hover
             @click="abrirModal(row.item)"
-            title="Editar Organização"
+            title="Editar Area"
             placement="right"
             variant="outline-primary"
             style="border: 0;"
           >
             <i class="fas fa-pencil-alt"></i>
           </b-button>
+          <b-button
+            v-b-tooltip.hover
+            @click="abrirModalDelecao(row)"
+            title="Excluir Area"
+            placement="right"
+            variant="outline-danger"
+            style="border: 0;"
+          >
+            <i class="fa fa-trash"></i>
+          </b-button>
         </template>
       </b-table>
+
+      <b-modal
+        ref="modalDeletar"
+        title="Atenção"
+        :no-close-on-esc="buttonExcluirIsBusy"
+        :no-close-on-backdrop="buttonExcluirIsBusy"
+        :hide-header-close="buttonExcluirIsBusy"
+      >
+        <p
+          class="my-4"
+        >Tem certeza que deseja deletar a area "{{ areaAtual.area_nome }}"?</p>
+
+        <div slot="modal-footer" class="w-100">
+          <b-button
+            :disabled="buttonExcluirIsBusy"
+            variant="primary"
+            style="min-width: 6rem; max-height: 3rem;"
+            size="md"
+            class="float-right"
+            @click="excluirArea"
+          >
+            OK
+            <b-spinner small class="ml-2" v-if="buttonExcluirIsBusy" label="Spinning"></b-spinner>
+          </b-button>
+          <b-button
+            :disabled="buttonExcluirIsBusy"
+            variant="danger"
+            size="md"
+            class="mr-2 float-right"
+            @click="fecharModalDeletar"
+          >Cancelar</b-button>
+        </div>
+      </b-modal>
 
       <b-modal
         ref="modalArea"
         size="lg"
         title=" Area"
         @hide="resetModel"
-        ok-title="Salvar"
-        cancel-title="Cancelar"
-        hide-footer
+        :no-close-on-esc="buttonCriarIsBusy"
+        :no-close-on-backdrop="buttonCriarIsBusy"
+        :hide-header-close="buttonCriarIsBusy"
       >
+        <div slot="modal-footer" class="w-100">
+          <b-button
+            :disabled="buttonCriarIsBusy"
+            variant="primary"
+            style="min-width: 6rem; max-height: 3rem;"
+            size="md"
+            class="float-right"
+            @click="atualizarSalvar"
+          >
+            OK
+            <b-spinner small class="ml-2" v-if="buttonCriarIsBusy" label="Spinning"></b-spinner>
+          </b-button>
+          <b-button
+            :disabled="buttonCriarIsBusy"
+            variant="danger"
+            size="md"
+            class="mr-2 float-right"
+            @click="fecharModalEditar"
+          >Cancelar</b-button>
+        </div>
         <div class="card">
           <div class="card-body">
             <h2>{{ titleModal }}</h2>
@@ -54,19 +117,6 @@
               </b-form-group>
             </b-form-row>
 
-            <b-form-row>
-              <b-form-group>
-                <b-button
-                  @click="atualizarSalvar"
-                  variant="primary"
-                  style="min-width: 6rem; max-height: 3rem;"
-                  :disabled="buttonSalvarIsBusy"
-                >
-                  Salvar
-                  <b-spinner small class="ml-2" v-if="buttonSalvarIsBusy" label="Spinning"></b-spinner>
-                </b-button>
-              </b-form-group>
-            </b-form-row>
           </div>
         </div>
       </b-modal>
@@ -81,11 +131,13 @@ import iziToast from "izitoast";
 export default {
   data() {
     return {
+      areaAtual: {},
+      buttonExcluirIsBusy: false,
       model: {
         nome: ""
       },
       tableIsBusy: false,
-      buttonSalvarIsBusy: false,
+      buttonCriarIsBusy: false,
       areas: [],
       fields: [
         { key: "area_nome", label: "Nome" },
@@ -107,6 +159,46 @@ export default {
     }
   },
   methods: {
+    excluirArea(){
+      this.buttonExcluirIsBusy = true;
+      var config = {
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+      };
+
+      axios
+        .delete(
+          "https://jithub.firebaseapp.com/api/area/" +
+            this.areaAtual.area_id,
+          config
+        )
+        .then(response => {
+          if (response.data.message == "Area it is in use") {
+            iziToast.warning({
+              title: "Atenção",
+              message: "Area já está em uso!",
+              position: "topRight"
+            });
+            this.buttonExcluirIsBusy = false;
+            return;
+          }
+          this.getAllAreas();
+          this.$refs["modalDeletar"].hide();
+          this.buttonExcluirIsBusy = false;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    fecharModalDeletar(){
+      this.$refs["modalDeletar"].hide();
+    },
+    abrirModalDelecao(row){
+      this.areaAtual = row.item;
+      this.$refs["modalDeletar"].show();
+    },
+    fecharModalEditar(){
+      this.$refs["modalArea"].hide();
+    },
     atualizarSalvar() {
       if (this.atualizarCriar == "Criar") {
         this.criarNovaArea();
@@ -121,20 +213,20 @@ export default {
       } else {
         this.titleModal = "Edição";
         this.atualizarCriar = "Atualizar";
-        this.model.area_id = item.area_id
+        this.model.area_id = item.area_id;
         this.model.nome = item.area_nome;
       }
       this.$refs["modalArea"].show();
     },
     async criarNovaArea() {
-      this.buttonSalvarIsBusy = true;
+      this.buttonCriarIsBusy = true;
       if (this.validationNome == false || this.validationNome == undefined) {
         iziToast.warning({
           title: "Atenção",
           message: "Todos os campos obrigatórios devem estar preenchidos!",
           position: "topRight"
         });
-        this.buttonSalvarIsBusy = false;
+        this.buttonCriarIsBusy = false;
         return;
       }
 
@@ -155,18 +247,18 @@ export default {
               message: "Área já existe!",
               position: "topRight"
             });
-            this.buttonSalvarIsBusy = false;
+            this.buttonCriarIsBusy = false;
             return;
           }
 
           this.model.nome = "";
-          this.buttonSalvarIsBusy = false;
+          this.buttonCriarIsBusy = false;
           this.getAllAreas();
           this.$refs["modalArea"].hide();
         })
         .catch(error => {
           console.log(error);
-          this.buttonSalvarIsBusy = false;
+          this.buttonCriarIsBusy = false;
         });
     },
     getAllAreas() {
@@ -188,15 +280,15 @@ export default {
         nome: ""
       };
     },
-    async atualizaArea(){
-      this.buttonSalvarIsBusy = true;
+    async atualizaArea() {
+      this.buttonCriarIsBusy = true;
       if (this.validationNome == false || this.validationNome == undefined) {
         iziToast.warning({
           title: "Atenção",
           message: "Todos os campos obrigatórios devem estar preenchidos!",
           position: "topRight"
         });
-        this.buttonSalvarIsBusy = false;
+        this.buttonCriarIsBusy = false;
         return;
       }
 
@@ -204,8 +296,6 @@ export default {
         headers: { Authorization: "Bearer " + localStorage.getItem("token") }
       };
 
-      console.log(this.model);
-      
       await axios
         .put(
           "https://jithub.firebaseapp.com/api/area/" + this.model.area_id,
@@ -219,18 +309,18 @@ export default {
               message: "Área já existe!",
               position: "topRight"
             });
-            this.buttonSalvarIsBusy = false;
+            this.buttonCriarIsBusy = false;
             return;
           }
 
           this.model.nome = "";
-          this.buttonSalvarIsBusy = false;
+          this.buttonCriarIsBusy = false;
           this.getAllAreas();
           this.$refs["modalArea"].hide();
         })
         .catch(error => {
           console.log(error.message);
-          this.buttonSalvarIsBusy = false;
+          this.buttonCriarIsBusy = false;
         });
     }
   }
