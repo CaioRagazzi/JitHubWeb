@@ -1,89 +1,13 @@
 <template>
   <div class="m-4">
     <h1>Usuarios</h1>
-    <div class="card">
-      <div class="card-body">
-        <h2>Cadastro</h2>
-        <b-form-row>
-          <b-form-group class="pr-4" id="fieldset-1" label="Login: *" label-for="input-1">
-            <b-form-input
-              style="width:300px;"
-              id="input-1"
-              placeholder="CPF"
-              :state="validationCpf"
-              v-model="model.cpf"
-              trim
-            ></b-form-input>
-            <b-form-invalid-feedback :state="validationCpf">O CPF deve conter 11 digitos</b-form-invalid-feedback>
-            <b-form-valid-feedback :state="validationCpf">Ok</b-form-valid-feedback>
-          </b-form-group>
 
-          <b-form-group class="pr-4" id="fieldset-3" label="Email:" label-for="input-3">
-            <b-form-input style="width:300px;" id="input-3" v-model="model.email" trim></b-form-input>
-          </b-form-group>
-
-          <b-form-group class="pr-4" id="fieldset-4" label="Nome:" label-for="input-4">
-            <b-form-input style="width:300px;" id="input-4" v-model="model.nome" trim></b-form-input>
-          </b-form-group>
-
-          <b-form-group class="pr-4" id="fieldset-5" label="Sobrenome:" label-for="input-5">
-            <b-form-input style="width:300px;" id="input-5" v-model="model.sobrenome" trim></b-form-input>
-          </b-form-group>
-
-          <b-form-group class="pr-4" id="fieldset-6" label="Perfil: *" label-for="input-6">
-            <b-form-select id="input-6" v-model="model.perfil" :options="perfis"></b-form-select>
-          </b-form-group>
-
-          <b-form-group class="pr-4" id="fieldset-6" label="Organização: *" label-for="input-6">
-            <b-form-select id="input-6" v-model="model.organizacao" :options="organizacoes"></b-form-select>
-          </b-form-group>
-        </b-form-row>
-
-        <b-form-row>
-          <b-form-group class="pr-4" id="fieldset-2" label="Senha: *" label-for="input-2">
-            <b-form-input
-              style="width:300px;"
-              id="input-2"
-              type="password"
-              :state="validationSenha"
-              v-model="model.password"
-              trim
-            ></b-form-input>
-            <b-form-invalid-feedback :state="validationSenha">{{ stringSenha }}</b-form-invalid-feedback>
-            <b-form-valid-feedback :state="validationSenha">Ok</b-form-valid-feedback>
-          </b-form-group>
-
-          <b-form-group id="fieldset-6" label="Confirme a senha: *" label-for="input-6">
-            <b-form-input
-              style="width:300px;"
-              id="input-6"
-              type="password"
-              :state="validationSenha"
-              v-model="model.confirmPassword"
-              trim
-            ></b-form-input>
-            <b-form-invalid-feedback :state="validationSenha">{{ stringSenha }}</b-form-invalid-feedback>
-            <b-form-valid-feedback :state="validationSenha">Ok</b-form-valid-feedback>
-          </b-form-group>
-        </b-form-row>
-
-        <b-form-row>
-          <b-form-group>
-            <b-button
-              @click="criarNovaConta"
-              variant="primary"
-              style="min-width: 6rem; max-height: 3rem;"
-            >
-              Criar
-              <b-spinner small class="ml-2" v-if="busy" label="Spinning"></b-spinner>
-            </b-button>
-          </b-form-group>
-        </b-form-row>
-      </div>
+    <div>
+      <b-button variant="outline-success" class="mt-2" @click="abrirModal">Criar novo</b-button>
     </div>
 
     <div class="pt-1">
-      <b-table striped hover :items="users" :fields="fields" :busy="isBusy" class="mt-5">
+      <b-table striped hover :items="users" :fields="fields" :busy="tableIsBusy" class="mt-5">
         <template
           slot="perfil"
           slot-scope="row"
@@ -102,7 +26,7 @@
 
           <b-button
             v-b-tooltip.hover
-            @click="abrirModalEdicao(row)"
+            @click="abrirModal(row.item)"
             title="Editar Usuario"
             placement="right"
             variant="outline-primary"
@@ -120,8 +44,111 @@
       <b-modal v-model="modalDeletarShow" title="Atenção" @ok="excluirUsuario">
         <p class="my-4">Tem certeza que deseja deletar o usuário com CPF "{{ usuarioAtual.cpf }}"?</p>
       </b-modal>
-      <b-modal v-model="modalEditarShow" title="Editar">
-        EDITAR
+      <b-modal
+        ref="modalUsuarios"
+        size="lg"
+        title=" Usuarios"
+        @hide="resetModel"
+        ok-title="Salvar"
+        cancel-title="Cancelar"
+        hide-footer
+      >
+        <div class="card">
+          <div class="card-body">
+            <h2>{{ titleModal }}</h2>
+            <b-form-row>
+              <b-form-group class="pr-4" id="fieldset-1" label="Login: *" label-for="input-1">
+                <b-form-input
+                  style="width:300px;"
+                  id="input-1"
+                  placeholder="CPF"
+                  :state="validationCpf"
+                  v-model="model.cpf"
+                  trim
+                ></b-form-input>
+                <b-form-invalid-feedback :state="validationCpf">O CPF deve conter 11 digitos</b-form-invalid-feedback>
+                <b-form-valid-feedback :state="validationCpf">Ok</b-form-valid-feedback>
+              </b-form-group>
+
+              <b-form-group class="pr-4" id="fieldset-3" label="Email:" label-for="input-3">
+                <b-form-input style="width:300px;" id="input-3" v-model="model.email" trim></b-form-input>
+              </b-form-group>
+
+              <b-form-group class="pr-4" id="fieldset-4" label="Nome:" label-for="input-4">
+                <b-form-input style="width:300px;" id="input-4" v-model="model.nome" trim></b-form-input>
+              </b-form-group>
+
+              <b-form-group class="pr-4" id="fieldset-5" label="Sobrenome:" label-for="input-5">
+                <b-form-input style="width:300px;" id="input-5" v-model="model.sobrenome" trim></b-form-input>
+              </b-form-group>
+
+              <b-form-group class="pr-4" id="fieldset-6" label="Perfil: *" label-for="input-6">
+                <b-form-select id="input-6" v-model="model.perfil" :options="perfis"></b-form-select>
+              </b-form-group>
+
+              <b-form-group class="pr-4" id="fieldset-6" label="Organização: *" label-for="input-6">
+                <b-form-select
+                  :disabled="inputOrganizacao"
+                  id="input-6"
+                  v-model="model.organizacao"
+                  :state="validationOrganizacao"
+                >
+                  <option
+                    v-for="item in organizacoes"
+                    :key="item.org_id"
+                    :value="item.org_id"
+                  >{{ item.org_nome }}</option>
+                </b-form-select>
+                <b-form-invalid-feedback
+                  :state="validationOrganizacao"
+                >A organização deve ser selecionada</b-form-invalid-feedback>
+                <b-form-valid-feedback :state="validationOrganizacao">Ok</b-form-valid-feedback>
+              </b-form-group>
+            </b-form-row>
+
+            <b-form-row>
+              <b-form-group class="pr-4" id="fieldset-2" label="Senha: *" label-for="input-2">
+                <b-form-input
+                  style="width:300px;"
+                  id="input-2"
+                  type="password"
+                  :state="validationSenha"
+                  v-model="model.password"
+                  trim
+                ></b-form-input>
+                <b-form-invalid-feedback :state="validationSenha">{{ stringSenha }}</b-form-invalid-feedback>
+                <b-form-valid-feedback :state="validationSenha">Ok</b-form-valid-feedback>
+              </b-form-group>
+
+              <b-form-group id="fieldset-6" label="Confirme a senha: *" label-for="input-6">
+                <b-form-input
+                  style="width:300px;"
+                  id="input-6"
+                  type="password"
+                  :state="validationSenha"
+                  v-model="model.confirmPassword"
+                  trim
+                ></b-form-input>
+                <b-form-invalid-feedback :state="validationSenha">{{ stringSenha }}</b-form-invalid-feedback>
+                <b-form-valid-feedback :state="validationSenha">Ok</b-form-valid-feedback>
+              </b-form-group>
+            </b-form-row>
+
+            <b-form-row>
+              <b-form-group>
+                <b-button
+                  @click="atualizarSalvar"
+                  variant="primary"
+                  style="min-width: 6rem; max-height: 3rem;"
+                  :disabled="buttonSalvarIsBusy"
+                >
+                  Salvar
+                  <b-spinner small class="ml-2" v-if="buttonSalvarIsBusy" label="Spinning"></b-spinner>
+                </b-button>
+              </b-form-group>
+            </b-form-row>
+          </div>
+        </div>
       </b-modal>
     </div>
   </div>
@@ -138,7 +165,7 @@ export default {
       usuarioAtual: {},
       modalDeletarShow: false,
       modalEditarShow: false,
-      busy: false,
+      buttonSalvarIsBusy: false,
       perfis: [
         { value: null, text: "Selecione" },
         { value: 1, text: "Administrador" },
@@ -146,7 +173,7 @@ export default {
         { value: 3, text: "Designer" }
       ],
       organizacoes: [],
-      isBusy: false,
+      tableIsBusy: false,
       model: {
         cpf: "",
         password: "",
@@ -166,7 +193,11 @@ export default {
         { key: "perfil", label: "Perfil" },
         { key: "action", label: "Ações" }
       ],
-      users: []
+      users: [],
+      titleModal: "",
+      atualizarCriar: "",
+      organizacoes: [],
+      inputOrganizacao: false
     };
   },
   computed: {
@@ -182,6 +213,12 @@ export default {
     },
     validationSobreNome() {
       return this.model.sobreNome.length > 0;
+    },
+    validationOrganizacao() {
+      if (this.model.organizacao == null) {
+        return undefined;
+      }
+      return this.model.organizacao != null;
     },
     validationNome() {
       return this.model.nome.length > 0;
@@ -210,9 +247,33 @@ export default {
     this.getAllUsers();
   },
   methods: {
-    abrirModalEdicao(row){
-      console.log(row);
-      this.modalEditarShow = true;
+    atualizarSalvar() {
+      if (this.atualizarCriar == "Criar") {
+        this.criarNovoUsuario();
+      } else if (this.atualizarCriar == "Atualizar") {
+        this.atualizaUsuario();
+      }
+    },
+    abrirModal(item) {
+      console.log(item);
+
+      this.getAllOrganizacoes();
+      if (!item.cpf) {
+        this.titleModal = "Criação";
+        this.atualizarCriar = "Criar";
+      } else {
+        this.titleModal = "Edição";
+        this.atualizarCriar = "Atualizar";
+        this.model.cpf = item.cpf;
+        (this.model.email = item.email),
+          (this.model.nome = item.nome),
+          (this.model.sobrenome = item.sobrenome),
+          (this.model.perfil = item.perfil_id);
+        item.org_id != null
+          ? (this.model.organizacao = item.org_id)
+          : (this.model.organizacao = null);
+      }
+      this.$refs["modalUsuarios"].show();
     },
     excluirUsuario() {
       var config = {
@@ -243,19 +304,21 @@ export default {
       this.usuarioAtual = row.item;
       this.modalDeletarShow = true;
     },
-    async criarNovaConta() {
-      this.busy = true;
+    async criarNovoUsuario() {
+      this.buttonSalvarIsBusy = true;
       if (
         this.validationCpf == false ||
         this.validationSenha == false ||
-        this.model.perfil == null
+        this.model.perfil == null ||
+        this.validationOrganizacao == null ||
+        this.validationOrganizacao == undefined
       ) {
         iziToast.warning({
           title: "Atenção",
           message: "Todos os campos obrigatórios devem estar preenchidos!",
           position: "topRight"
         });
-        this.busy = false;
+        this.buttonSalvarIsBusy = false;
         return;
       }
 
@@ -276,15 +339,16 @@ export default {
               message: "Usuário já existe!",
               position: "topRight"
             });
-            this.busy = false;
-            return
+            this.buttonSalvarIsBusy = false;
+            return;
           }
-          this.busy = false;
+          this.buttonSalvarIsBusy = false;
           this.getAllUsers();
+          this.$refs["modalUsuarios"].hide();
         })
         .catch(error => {
           console.log(error.message);
-          this.busy = false;
+          this.buttonSalvarIsBusy = false;
         });
 
       this.model.cpf = "";
@@ -296,7 +360,7 @@ export default {
       this.model.perfil = null;
     },
     getAllUsers() {
-      this.isBusy = true;
+      this.tableIsBusy = true;
 
       var config = {
         headers: { Authorization: "Bearer " + localStorage.getItem("token") }
@@ -306,7 +370,36 @@ export default {
         .get("https://jithub.firebaseapp.com/api/user/all", config)
         .then(response => {
           this.users = response.data;
-          this.isBusy = false;
+          this.tableIsBusy = false;
+        });
+    },
+    resetModel() {
+      this.model = {
+        cpf: "",
+        password: "",
+        confirmPassword: "",
+        email: "",
+        nome: "",
+        sobrenome: "",
+        perfil: null,
+        organizacao: null,
+        ativo: true
+      };
+    },
+    atualizaUsuario() {
+      console.log(this.model);
+    },
+    getAllOrganizacoes() {
+      this.inputOrganizacao = true;
+      var config = {
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+      };
+
+      axios
+        .get("https://jithub.firebaseapp.com/api/organizacao/all", config)
+        .then(response => {
+          this.organizacoes = response.data;
+          this.inputOrganizacao = false;
         });
     }
   }
