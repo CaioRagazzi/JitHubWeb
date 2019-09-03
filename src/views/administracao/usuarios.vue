@@ -41,18 +41,67 @@
         </div>
       </b-table>
 
-      <b-modal v-model="modalDeletarShow" title="Atenção" @ok="excluirUsuario">
+      <b-modal
+        v-model="modalDeletarShow"
+        ref="modalDeletar"
+        title="Atenção"
+        :no-close-on-esc="buttonExcluirIsBusy"
+        :no-close-on-backdrop="buttonExcluirIsBusy"
+        :hide-header-close="buttonExcluirIsBusy"
+      >
         <p class="my-4">Tem certeza que deseja deletar o usuário com CPF "{{ usuarioAtual.cpf }}"?</p>
+
+        <div slot="modal-footer" class="w-100">
+          <b-button
+            :disabled="buttonExcluirIsBusy"
+            variant="primary"
+            style="min-width: 6rem; max-height: 3rem;"
+            size="md"
+            class="float-right"
+            @click="excluirUsuario"
+          >
+            OK
+            <b-spinner small class="ml-2" v-if="buttonExcluirIsBusy" label="Spinning"></b-spinner>
+          </b-button>
+          <b-button
+            :disabled="buttonExcluirIsBusy"
+            variant="danger"
+            size="md"
+            class="mr-2 float-right"
+            @click="fecharModalDeletar"
+          >Cancelar</b-button>
+        </div>
       </b-modal>
       <b-modal
         ref="modalUsuarios"
         size="lg"
         title=" Usuarios"
         @hide="resetModel"
-        ok-title="Salvar"
-        cancel-title="Cancelar"
-        hide-footer
+        :no-close-on-esc="buttonSalvarIsBusy"
+        :no-close-on-backdrop="buttonSalvarIsBusy"
+        :hide-header-close="buttonSalvarIsBusy"
       >
+        <div slot="modal-footer" class="w-100">
+          <b-button
+            :disabled="buttonSalvarIsBusy"
+            variant="primary"
+            style="min-width: 6rem; max-height: 3rem;"
+            size="md"
+            class="float-right"
+            @click="atualizarSalvar"
+          >
+            OK
+            <b-spinner small class="ml-2" v-if="buttonSalvarIsBusy" label="Spinning"></b-spinner>
+          </b-button>
+          <b-button
+            :disabled="buttonSalvarIsBusy"
+            variant="danger"
+            size="md"
+            class="mr-2 float-right"
+            @click="fecharModalCriar"
+          >Cancelar</b-button>
+        </div>
+
         <div class="card">
           <div class="card-body">
             <h2>{{ titleModal }}</h2>
@@ -62,6 +111,7 @@
                   style="width:300px;"
                   id="input-1"
                   placeholder="CPF"
+                  :disabled="atualizarCriar == 'Atualizar' ? true : false"
                   :state="validationCpf"
                   v-model="model.cpf"
                   trim
@@ -106,7 +156,7 @@
               </b-form-group>
             </b-form-row>
 
-            <b-form-row>
+            <b-form-row v-if="atualizarCriar == 'Criar'">
               <b-form-group class="pr-4" id="fieldset-2" label="Senha: *" label-for="input-2">
                 <b-form-input
                   style="width:300px;"
@@ -134,7 +184,7 @@
               </b-form-group>
             </b-form-row>
 
-            <b-form-row>
+            <!-- <b-form-row>
               <b-form-group>
                 <b-button
                   @click="atualizarSalvar"
@@ -146,7 +196,7 @@
                   <b-spinner small class="ml-2" v-if="buttonSalvarIsBusy" label="Spinning"></b-spinner>
                 </b-button>
               </b-form-group>
-            </b-form-row>
+            </b-form-row> -->
           </div>
         </div>
       </b-modal>
@@ -166,6 +216,7 @@ export default {
       modalDeletarShow: false,
       modalEditarShow: false,
       buttonSalvarIsBusy: false,
+      buttonExcluirIsBusy: false,
       perfis: [
         { value: null, text: "Selecione" },
         { value: 1, text: "Administrador" },
@@ -175,6 +226,7 @@ export default {
       organizacoes: [],
       tableIsBusy: false,
       model: {
+        userId: null,
         cpf: "",
         password: "",
         confirmPassword: "",
@@ -183,7 +235,8 @@ export default {
         sobrenome: "",
         perfil: null,
         organizacao: null,
-        ativo: true
+        ativo: true,
+        oldOrganizacao: null
       },
       fields: [
         { key: "cpf", label: "cpf" },
@@ -255,8 +308,6 @@ export default {
       }
     },
     abrirModal(item) {
-      console.log(item);
-
       this.getAllOrganizacoes();
       if (!item.cpf) {
         this.titleModal = "Criação";
@@ -264,7 +315,9 @@ export default {
       } else {
         this.titleModal = "Edição";
         this.atualizarCriar = "Atualizar";
+        this.model.userId = item.user_id;
         this.model.cpf = item.cpf;
+        this.model.oldOrganizacao = item.org_id;
         (this.model.email = item.email),
           (this.model.nome = item.nome),
           (this.model.sobrenome = item.sobrenome),
@@ -275,12 +328,28 @@ export default {
       }
       this.$refs["modalUsuarios"].show();
     },
-    excluirUsuario() {
+    async excluirUsuario() {
+      this.buttonExcluirIsBusy = true;
       var config = {
         headers: { Authorization: "Bearer " + localStorage.getItem("token") }
       };
 
-      axios
+      var model = {
+        user_id: this.usuarioAtual.user_id,
+        oldOrg_id: this.usuarioAtual.org_id
+      };
+
+      await axios
+        .post(
+          "https://jithub.firebaseapp.com/api/organizacao/deleteUserOrg",
+          model,
+          config
+        )
+        .catch(err => {
+          console.log(err);
+        });
+
+      await axios
         .delete(
           "https://jithub.firebaseapp.com/api/user/" + this.usuarioAtual.cpf,
           config
@@ -295,6 +364,8 @@ export default {
             position: "topRight"
           });
           this.getAllUsers();
+          this.$refs["modalDeletar"].hide();
+          this.buttonExcluirIsBusy = false;
         })
         .catch(error => {
           console.log(error);
@@ -386,8 +457,49 @@ export default {
         ativo: true
       };
     },
-    atualizaUsuario() {
-      console.log(this.model);
+    async atualizaUsuario() {
+      this.buttonSalvarIsBusy = true;
+      if (
+        this.validationCpf == false ||
+        this.model.perfil == null ||
+        this.validationOrganizacao == null ||
+        this.validationOrganizacao == undefined
+      ) {
+        iziToast.warning({
+          title: "Atenção",
+          message: "Todos os campos obrigatórios devem estar preenchidos!",
+          position: "topRight"
+        });
+        this.buttonSalvarIsBusy = false;
+        return;
+      }
+
+      if (this.model.organizacao != this.model.oldOrganizacao) {
+        await this.atualizaOrganizacao(
+          this.model.organizacao,
+          this.model.oldOrganizacao
+        );
+      }
+
+      var config = {
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+      };
+
+      await axios
+        .put(
+          "https://jithub.firebaseapp.com/api/user/" + this.model.cpf,
+          this.model,
+          config
+        )
+        .then(response => {
+          this.$refs["modalUsuarios"].hide();
+          this.getAllUsers();
+          this.buttonSalvarIsBusy = false;
+        })
+        .catch(err => {
+          console.log(err);
+          this.buttonSalvarIsBusy = false;
+        });
     },
     getAllOrganizacoes() {
       this.inputOrganizacao = true;
@@ -401,6 +513,29 @@ export default {
           this.organizacoes = response.data;
           this.inputOrganizacao = false;
         });
+    },
+    async atualizaOrganizacao(newOrg, oldOrg) {
+      var config = {
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+      };
+
+      var model = {
+        user_id: this.model.userId,
+        oldOrg_id: oldOrg,
+        newOrg_id: newOrg
+      };
+
+      await axios.post(
+        "https://jithub.firebaseapp.com/api/organizacao/updateUserOrg",
+        model,
+        config
+      );
+    },
+    fecharModalDeletar() {
+      this.$refs["modalDeletar"].hide();
+    },
+    fecharModalCriar(){
+      this.$refs["modalUsuarios"].hide();
     }
   }
 };
