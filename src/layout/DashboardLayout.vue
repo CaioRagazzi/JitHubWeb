@@ -1,8 +1,8 @@
 <template>
   <div class="wrapper" :class="{ 'nav-open': $sidebar.showSidebar }">
-    <side-bar :background-color="sidebarBackground" short-title="Argon" title="Argon">
+    <side-bar :background-color="sidebarBackground">
       <template slot="links">
-        <sidebar-menu :relative="true" :menu="menu" />
+        <sidebar-menu :hideToggle="true" :menu="menu" />
         <li class="nav-item">
           <a style="cursor: pointer;" class="nav-link" @click="deslogar">
             <template>
@@ -14,12 +14,12 @@
       </template>
     </side-bar>
     <div class="main-content" :data="sidebarBackground">
-      <!-- <dashboard-navbar></dashboard-navbar> -->
+    <dashboard-navbar></dashboard-navbar>
       <div @click="toggleSidebar">
-        <fade-transition :duration="200" origin="center top" mode="out-in">
+        <SlideXRightTransition :duration="200" origin="center top" mode="out-in">
           <!-- your content here -->
           <router-view></router-view>
-        </fade-transition>
+        </SlideXRightTransition>
         <!-- <content-footer v-if="!$route.meta.hideFooter"></content-footer> -->
       </div>
     </div>
@@ -28,7 +28,7 @@
 <script>
 import DashboardNavbar from "./DashboardNavbar.vue";
 import ContentFooter from "./ContentFooter.vue";
-import { FadeTransition } from "vue2-transitions";
+import { SlideXRightTransition } from "vue2-transitions";
 import jwt_decode from "jwt-decode";
 import { SidebarMenu } from "vue-sidebar-menu";
 
@@ -36,8 +36,8 @@ export default {
   components: {
     DashboardNavbar,
     ContentFooter,
-    FadeTransition,
-    SidebarMenu
+    SidebarMenu,
+    SlideXRightTransition
   },
   data() {
     return {
@@ -81,6 +81,7 @@ export default {
             },
             {
               title: "Usuario",
+              href: '/cadastro/usuarios',
               class: "nav-link ml-5"
             }
           ]

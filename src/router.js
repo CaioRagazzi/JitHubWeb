@@ -35,18 +35,23 @@ const router = new Router({
         },
         {
           path: '/administracao/usuarios',
-          name: 'organizacao',
+          name: 'organizacaoUsuarios',
           component: () => import(/* webpackChunkName: "demo" */ './views/administracao/usuarios.vue')
         },
         {
           path: '/administracao/disciplina',
-          name: 'organizacao',
+          name: 'organizacaoDisciplina',
           component: () => import(/* webpackChunkName: "demo" */ './views/administracao/disciplina.vue')
         },
         {
           path: '/administracao/area',
-          name: 'organizacao',
+          name: 'organizacaoArea',
           component: () => import(/* webpackChunkName: "demo" */ './views/administracao/area.vue')
+        },
+        {
+          path: '/cadastro/usuarios',
+          name: 'cadastroUsuarios',
+          component: () => import(/* webpackChunkName: "demo" */ './views/cadastro/usuarios.vue')
         }
       ]
     },

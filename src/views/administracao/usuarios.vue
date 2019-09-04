@@ -2,10 +2,9 @@
   <div class="m-4">
     <h1>Usuarios</h1>
 
+    <b-button variant="outline-success" class="mt-2" @click="abrirModal">Criar novo</b-button>
 
-      <b-button variant="outline-success" class="mt-2" @click="abrirModal">Criar novo</b-button>
-
-      <b-form-group
+    <b-form-group
       label="Filtrar"
       label-cols-sm="3"
       label-align-sm="left"
@@ -16,13 +15,22 @@
     <b-input-group size="sm">
       <b-form-input v-model="filtro" type="search" id="filterInput" placeholder="Busca"></b-form-input>
       <b-input-group-append>
-        <b-button :disabled="!filtro" @click="filtro = ''">Limpar</b-button>
+        <b-button variant="outline-success" :disabled="!filtro" @click="filtro = ''">Limpar</b-button>
       </b-input-group-append>
     </b-input-group>
 
-
     <div class="pt-1">
-      <b-table :filter="filtro" small striped hover :items="users" :fields="fields" :busy="tableIsBusy" class="mt-2">
+      <b-table
+        sort-by="nome"
+        :filter="filtro"
+        small
+        striped
+        hover
+        :items="users"
+        :fields="fields"
+        :busy="tableIsBusy"
+        class="mt-2"
+      >
         <template
           slot="perfil"
           slot-scope="row"

@@ -1,8 +1,8 @@
-<!--<template>
-    <div class="main-content bg-default">
-        <div class="header bg-gradient-success py-7 py-lg-8">
+<template>
+    <div class="main-content">
+        <div class="header py-7 py-lg-8">
             <div class="container">
-                <div class="header-body text-center mb-7">
+                <div class="header-body text-center mb-8">
                     <div class="row justify-content-center">
                         <div class="col-lg-5 col-md-6">
                             
@@ -10,14 +10,14 @@
                     </div>
                 </div>
             </div>
-            <div class="separator separator-bottom separator-skew zindex-100">
+            <!-- <div class="separator separator-bottom separator-skew zindex-100">
                 <svg x="0" y="0" viewBox="0 0 2560 100" preserveAspectRatio="none" version="1.1"
                      xmlns="http://www.w3.org/2000/svg">
                     <polygon class="fill-default" points="2560 0 2560 100 0 100"></polygon>
                 </svg>
-            </div>
+            </div> -->
         </div>
-        <div class="container mt--8 pb-5">
+        <div class="container mt--8" style="padding-bottom: 100%">
             <slide-y-up-transition mode="out-in" origin="center top">
                 <router-view></router-view>
             </slide-y-up-transition>
@@ -27,13 +27,13 @@
                 <div class="row align-items-center justify-content-xl-between">
                     <div class="col-xl-6">
                         <div class="copyright text-center text-xl-left text-muted">
-                            &copy; {{year}} <a href="https://www.creative-tim.com" class="font-weight-bold ml-1"
-                                               target="_blank">Creative Tim</a>
+                            <!-- &copy; {{year}} <a href="https://www.creative-tim.com" class="font-weight-bold ml-1"
+                                               target="_blank">Creative Tim</a> -->
                         </div>
                     </div>
                     <div class="col-xl-6">
                         <ul class="nav nav-footer justify-content-center justify-content-xl-end">
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                                 <a href="https://www.creative-tim.com" class="nav-link" target="_blank">Creative Tim</a>
                             </li>
                             <li class="nav-item">
@@ -46,23 +46,12 @@
                             <li class="nav-item">
                                 <a href="https://github.com/creativetimofficial/argon-dashboard/blob/master/LICENSE.md"
                                    class="nav-link" target="_blank">MIT License</a>
-                            </li>
+                            </li> -->
                         </ul>
                     </div>
                 </div>
             </div>
         </footer>
-    </div>
-</template>-->
-<template>
-    <div class="main-content bg-default">
-        <div class="header bg-gradient-success py-7 py-lg-9">
-        </div>
-        <div class="container mt--5 pb-9">
-            <slide-y-up-transition mode="out-in" origin="center top">
-                <router-view></router-view>
-            </slide-y-up-transition>
-        </div>
     </div>
 </template>
 

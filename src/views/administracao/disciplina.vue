@@ -15,12 +15,13 @@
     <b-input-group size="sm">
       <b-form-input v-model="filtro" type="search" id="filterInput" placeholder="Busca"></b-form-input>
       <b-input-group-append>
-        <b-button :disabled="!filtro" @click="filtro = ''">Limpar</b-button>
+        <b-button variant="outline-success" :disabled="!filtro" @click="filtro = ''">Limpar</b-button>
       </b-input-group-append>
     </b-input-group>
 
     <div class="pt-1">
       <b-table
+        sort-by="disc_nome"
         small
         striped
         :filter="filtro"
