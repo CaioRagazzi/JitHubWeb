@@ -2,18 +2,33 @@
   <div class="m-4">
     <h1>Organizações</h1>
 
-    <div>
-      <b-button variant="outline-success" class="mt-2" @click="abrirModal">Criar nova</b-button>
-    </div>
+    <b-button variant="outline-success" class="mt-2" @click="abrirModal">Criar nova</b-button>
+
+    <b-form-group
+      label="Filtrar"
+      label-cols-sm="3"
+      label-align-sm="left"
+      label-size="sm"
+      label-for="filterInput"
+      class="mb-0 mt-3"
+    ></b-form-group>
+    <b-input-group size="sm">
+      <b-form-input v-model="filtro" type="search" id="filterInput" placeholder="Busca"></b-form-input>
+      <b-input-group-append>
+        <b-button :disabled="!filtro" @click="filtro = ''">Limpar</b-button>
+      </b-input-group-append>
+    </b-input-group>
 
     <div>
       <b-table
+        small
         striped
+        :filter="filtro"
         hover
         :items="organizacoes"
         :fields="fields"
         :busy="tableIsBusy"
-        class="mt-5"
+        class="mt-2"
       >
         <div slot="table-busy" class="text-center text-danger my-2">
           <b-spinner class="align-middle mr-1"></b-spinner>
@@ -86,7 +101,7 @@
         :no-close-on-backdrop="buttonCriarIsBusy"
         :hide-header-close="buttonCriarIsBusy"
       >
-      <div slot="modal-footer" class="w-100">
+        <div slot="modal-footer" class="w-100">
           <b-button
             :disabled="buttonCriarIsBusy"
             variant="primary"
@@ -170,17 +185,6 @@
                 <b-form-valid-feedback :state="validationContato">Ok</b-form-valid-feedback>
               </b-form-group>
             </b-form-row>
-            <!-- <b-form-group>
-              <b-button
-                @click="atualizarSalvar"
-                variant="primary"
-                style="min-width: 6rem; max-height: 3rem;"
-                :disabled="buttonCriarIsBusy"
-              >
-                Salvar
-                <b-spinner small class="ml-2" v-if="buttonCriarIsBusy" label="Spinning"></b-spinner>
-              </b-button>
-            </b-form-group> -->
           </div>
         </div>
       </b-modal>
@@ -195,6 +199,7 @@ import iziToast from "izitoast";
 export default {
   data() {
     return {
+      filtro: null,
       organizacaoAtual: {},
       buttonExcluirIsBusy: false,
       model: {
@@ -279,7 +284,7 @@ export default {
           console.log(err);
         });
     },
-    fecharModalEditar(){
+    fecharModalEditar() {
       this.$refs["modalOrganizacao"].hide();
     },
     fecharModalDeletar() {

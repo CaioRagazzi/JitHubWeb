@@ -2,12 +2,34 @@
   <div class="m-4">
     <h1>Disciplina</h1>
 
-    <div>
-      <b-button variant="outline-success" class="mt-2" @click="abrirModal">Criar nova</b-button>
-    </div>
+    <b-button variant="outline-success" class="mt-2" @click="abrirModal">Criar nova</b-button>
+
+    <b-form-group
+      label="Filtrar"
+      label-cols-sm="3"
+      label-align-sm="left"
+      label-size="sm"
+      label-for="filterInput"
+      class="mb-0 mt-3"
+    ></b-form-group>
+    <b-input-group size="sm">
+      <b-form-input v-model="filtro" type="search" id="filterInput" placeholder="Busca"></b-form-input>
+      <b-input-group-append>
+        <b-button :disabled="!filtro" @click="filtro = ''">Limpar</b-button>
+      </b-input-group-append>
+    </b-input-group>
 
     <div class="pt-1">
-      <b-table striped hover :items="disciplinas" :fields="fields" :busy="tableIsBusy" class="mt-5">
+      <b-table
+        small
+        striped
+        :filter="filtro"
+        hover
+        :items="disciplinas"
+        :fields="fields"
+        :busy="tableIsBusy"
+        class="mt-2"
+      >
         <div slot="table-busy" class="text-center text-danger my-2">
           <b-spinner class="align-middle mr-1"></b-spinner>
           <strong>Carregando...</strong>
@@ -149,6 +171,7 @@ import iziToast from "izitoast";
 export default {
   data() {
     return {
+      filtro: null,
       disciplinaAtual: {},
       buttonExcluirIsBusy: false,
       model: {
@@ -196,7 +219,8 @@ export default {
 
       axios
         .delete(
-          "https://jithub.firebaseapp.com/api/disciplina/" + this.disciplinaAtual.disc_id,
+          "https://jithub.firebaseapp.com/api/disciplina/" +
+            this.disciplinaAtual.disc_id,
           config
         )
         .then(response => {

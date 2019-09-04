@@ -2,12 +2,34 @@
   <div class="m-4">
     <h1>Área</h1>
 
-    <div>
-      <b-button variant="outline-success" class="mt-2" @click="abrirModal">Criar nova</b-button>
-    </div>
+    <b-button variant="outline-success" class="mt-2" @click="abrirModal">Criar nova</b-button>
+
+    <b-form-group
+      label="Filtrar"
+      label-cols-sm="3"
+      label-align-sm="left"
+      label-size="sm"
+      label-for="filterInput"
+      class="mb-0 mt-3"
+    ></b-form-group>
+    <b-input-group size="sm">
+      <b-form-input v-model="filtro" type="search" id="filterInput" placeholder="Busca"></b-form-input>
+      <b-input-group-append>
+        <b-button :disabled="!filtro" @click="filtro = ''">Limpar</b-button>
+      </b-input-group-append>
+    </b-input-group>
 
     <div class="pt-1">
-      <b-table striped hover :items="areas" :fields="fields" :busy="tableIsBusy" class="mt-5">
+      <b-table
+        small
+        :filter="filtro"
+        striped
+        hover
+        :items="areas"
+        :fields="fields"
+        :busy="tableIsBusy"
+        class="mt-2"
+      >
         <div slot="table-busy" class="text-center text-danger my-2">
           <b-spinner class="align-middle mr-1"></b-spinner>
           <strong>Carregando...</strong>
@@ -43,9 +65,7 @@
         :no-close-on-backdrop="buttonExcluirIsBusy"
         :hide-header-close="buttonExcluirIsBusy"
       >
-        <p
-          class="my-4"
-        >Tem certeza que deseja deletar a area "{{ areaAtual.area_nome }}"?</p>
+        <p class="my-4">Tem certeza que deseja deletar a area "{{ areaAtual.area_nome }}"?</p>
 
         <div slot="modal-footer" class="w-100">
           <b-button
@@ -116,7 +136,6 @@
                 <b-form-valid-feedback :state="validationNome">Ok</b-form-valid-feedback>
               </b-form-group>
             </b-form-row>
-
           </div>
         </div>
       </b-modal>
@@ -131,6 +150,7 @@ import iziToast from "izitoast";
 export default {
   data() {
     return {
+      filtro: null,
       areaAtual: {},
       buttonExcluirIsBusy: false,
       model: {
@@ -159,7 +179,7 @@ export default {
     }
   },
   methods: {
-    excluirArea(){
+    excluirArea() {
       this.buttonExcluirIsBusy = true;
       var config = {
         headers: { Authorization: "Bearer " + localStorage.getItem("token") }
@@ -167,8 +187,7 @@ export default {
 
       axios
         .delete(
-          "https://jithub.firebaseapp.com/api/area/" +
-            this.areaAtual.area_id,
+          "https://jithub.firebaseapp.com/api/area/" + this.areaAtual.area_id,
           config
         )
         .then(response => {
@@ -189,14 +208,14 @@ export default {
           console.log(err);
         });
     },
-    fecharModalDeletar(){
+    fecharModalDeletar() {
       this.$refs["modalDeletar"].hide();
     },
-    abrirModalDelecao(row){
+    abrirModalDelecao(row) {
       this.areaAtual = row.item;
       this.$refs["modalDeletar"].show();
     },
-    fecharModalEditar(){
+    fecharModalEditar() {
       this.$refs["modalArea"].hide();
     },
     atualizarSalvar() {

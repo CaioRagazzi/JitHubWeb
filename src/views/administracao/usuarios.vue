@@ -2,28 +2,32 @@
   <div class="m-4">
     <h1>Usuarios</h1>
 
-    <div>
+
       <b-button variant="outline-success" class="mt-2" @click="abrirModal">Criar novo</b-button>
-    </div>
+
+      <b-form-group
+      label="Filtrar"
+      label-cols-sm="3"
+      label-align-sm="left"
+      label-size="sm"
+      label-for="filterInput"
+      class="mb-0 mt-3"
+    ></b-form-group>
+    <b-input-group size="sm">
+      <b-form-input v-model="filtro" type="search" id="filterInput" placeholder="Busca"></b-form-input>
+      <b-input-group-append>
+        <b-button :disabled="!filtro" @click="filtro = ''">Limpar</b-button>
+      </b-input-group-append>
+    </b-input-group>
+
 
     <div class="pt-1">
-      <b-table striped hover :items="users" :fields="fields" :busy="tableIsBusy" class="mt-5">
+      <b-table :filter="filtro" small striped hover :items="users" :fields="fields" :busy="tableIsBusy" class="mt-2">
         <template
           slot="perfil"
           slot-scope="row"
         >{{ row.item.perfil_id == 1 ? 'Administrador' : row.item.perfil_id == 3 ? 'Designer' : 'Usuario' }}</template>
         <template slot="action" slot-scope="row">
-          <b-button
-            v-b-tooltip.hover
-            @click="abrirModalDelecao(row)"
-            title="Excluir Usuario"
-            placement="right"
-            variant="outline-danger"
-            style="border: 0;"
-          >
-            <i class="fa fa-trash"></i>
-          </b-button>
-
           <b-button
             v-b-tooltip.hover
             @click="abrirModal(row.item)"
@@ -33,6 +37,17 @@
             style="border: 0;"
           >
             <i class="fas fa-pencil-alt"></i>
+          </b-button>
+
+          <b-button
+            v-b-tooltip.hover
+            @click="abrirModalDelecao(row)"
+            title="Excluir Usuario"
+            placement="right"
+            variant="outline-danger"
+            style="border: 0;"
+          >
+            <i class="fa fa-trash"></i>
           </b-button>
         </template>
         <div slot="table-busy" class="text-center text-danger my-2">
@@ -183,20 +198,6 @@
                 <b-form-valid-feedback :state="validationSenha">Ok</b-form-valid-feedback>
               </b-form-group>
             </b-form-row>
-
-            <!-- <b-form-row>
-              <b-form-group>
-                <b-button
-                  @click="atualizarSalvar"
-                  variant="primary"
-                  style="min-width: 6rem; max-height: 3rem;"
-                  :disabled="buttonSalvarIsBusy"
-                >
-                  Salvar
-                  <b-spinner small class="ml-2" v-if="buttonSalvarIsBusy" label="Spinning"></b-spinner>
-                </b-button>
-              </b-form-group>
-            </b-form-row> -->
           </div>
         </div>
       </b-modal>
@@ -212,6 +213,7 @@ export default {
   name: "register",
   data() {
     return {
+      filtro: null,
       usuarioAtual: {},
       modalDeletarShow: false,
       modalEditarShow: false,
@@ -534,7 +536,7 @@ export default {
     fecharModalDeletar() {
       this.$refs["modalDeletar"].hide();
     },
-    fecharModalCriar(){
+    fecharModalCriar() {
       this.$refs["modalUsuarios"].hide();
     }
   }
