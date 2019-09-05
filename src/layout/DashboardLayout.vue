@@ -77,11 +77,12 @@ export default {
           child: [
             {
               title: "Estabelecimento",
+              href: '/cadastro/estabelecimento',
               class: "nav-link ml-5"
             },
             {
               title: "Usuario",
-              href: '/cadastro/usuarios',
+              href: '/cadastro/usuario',
               class: "nav-link ml-5"
             }
           ]

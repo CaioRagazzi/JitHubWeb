@@ -55,29 +55,47 @@
         </b-form-group>
       </b-form-row>
     </tab-content>
-    <tab-content title="Estabelecimento">Estabelecimento</tab-content>
+    <tab-content title="Estabelecimento">
+      <treeselect
+        v-model="model.estabelecimentos"
+        :options="estabelecimentos"
+        :multiple="true"
+        :normalizer="normalizer"
+        placeholder="Selecione os estabelecimentos..."
+      />
+    </tab-content>
     <tab-content title="Senha">Senha</tab-content>
+    <pre> {{model}} </pre>
   </form-wizard>
 </template>
 
 <script>
+import axios from "axios";
 import { FormWizard, TabContent } from "vue-form-wizard";
 import "vue-form-wizard/dist/vue-form-wizard.min.css";
+import Treeselect, {ASYNC_SEARCH} from "@riophae/vue-treeselect";
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
 export default {
   components: {
     FormWizard,
-    TabContent
+    TabContent,
+    Treeselect
   },
   data() {
     return {
+      estabelecimentos: [],
       model: {
         cpf: "",
         email: "",
         nome: "",
-        sobrenome: ""
+        sobrenome: "",
+        estabelecimentos: null
       }
     };
+  },
+  created() {
+    this.getAllEstabelecimentos()
   },
   computed: {
     validationCpf() {
@@ -85,6 +103,30 @@ export default {
         return undefined;
       }
       return this.model.cpf.length == 11;
+    }
+  },
+  methods: {
+    normalizer(node) {
+      return {
+        id: node.org_id,
+        label: node.org_nome
+      };
+    },
+    getAllEstabelecimentos() {
+      var config = {
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+      };
+
+      var orgId = JSON.parse(localStorage.getItem("user")).org_id;
+
+      axios
+        .get(
+          "https://jithub.firebaseapp.com/api/estabelecimento/all/" + orgId,
+          config
+        )
+        .then(response => {
+          this.estabelecimentos = response.data;
+        });
     }
   }
 };
