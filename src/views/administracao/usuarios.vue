@@ -159,7 +159,7 @@
                 <b-form-select id="input-6" v-model="model.perfil" :options="perfis"></b-form-select>
               </b-form-group>
 
-              <b-form-group class="pr-4" id="fieldset-6" label="Organização: *" label-for="input-6">
+              <b-form-group v-if="atualizarCriar == 'Atualizar' ? false : true" class="pr-4" id="fieldset-6" label="Organização: *" label-for="input-6">
                 <b-form-select
                   :disabled="inputOrganizacao"
                   id="input-6"
@@ -274,14 +274,14 @@ export default {
         return "A senha e a confirmação da senha deve ser iguais";
       }
     },
-    validationSobreNome() {
-      return this.model.sobreNome.length > 0;
-    },
     validationOrganizacao() {
       if (this.model.organizacao == null) {
         return undefined;
       }
       return this.model.organizacao != null;
+    },
+    validationSobreNome() {
+      return this.model.sobreNome.length > 0;
     },
     validationNome() {
       return this.model.nome.length > 0;
@@ -471,9 +471,7 @@ export default {
       this.buttonSalvarIsBusy = true;
       if (
         this.validationCpf == false ||
-        this.model.perfil == null ||
-        this.validationOrganizacao == null ||
-        this.validationOrganizacao == undefined
+        this.model.perfil == null
       ) {
         iziToast.warning({
           title: "Atenção",
@@ -482,13 +480,6 @@ export default {
         });
         this.buttonSalvarIsBusy = false;
         return;
-      }
-
-      if (this.model.organizacao != this.model.oldOrganizacao) {
-        await this.atualizaOrganizacao(
-          this.model.organizacao,
-          this.model.oldOrganizacao
-        );
       }
 
       var config = {
@@ -523,23 +514,6 @@ export default {
           this.organizacoes = response.data;
           this.inputOrganizacao = false;
         });
-    },
-    async atualizaOrganizacao(newOrg, oldOrg) {
-      var config = {
-        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
-      };
-
-      var model = {
-        user_id: this.model.userId,
-        oldOrg_id: oldOrg,
-        newOrg_id: newOrg
-      };
-
-      await axios.post(
-        "https://jithub.firebaseapp.com/api/organizacao/updateUserOrg",
-        model,
-        config
-      );
     },
     fecharModalDeletar() {
       this.$refs["modalDeletar"].hide();
