@@ -94,7 +94,7 @@
 </template>
 
 <script>
-import { relatorioHttp } from "../api/relatorio";
+
 
 export default {
   data: () => ({

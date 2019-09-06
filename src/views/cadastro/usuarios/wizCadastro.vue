@@ -219,6 +219,9 @@ export default {
   },
   methods: {
     async gravarUsuario() {
+      if (!this.validaSenha()) {
+        return
+      }
       this.$emit("gravandoUsuario", true);
       this.buttonSalvarIsBusy = true;
       if (!this.validaSenha()) {

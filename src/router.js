@@ -36,7 +36,7 @@ const router = new Router({
         {
           path: '/administracao/usuarios',
           name: 'organizacaoUsuarios',
-          component: () => import(/* webpackChunkName: "demo" */ './views/administracao/usuarios.vue')
+          component: () => import(/* webpackChunkName: "demo" */ './views/administracao/usuarios/usuarios.vue')
         },
         {
           path: '/administracao/disciplina',
