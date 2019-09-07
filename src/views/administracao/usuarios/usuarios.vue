@@ -57,6 +57,28 @@
           >
             <i class="fa fa-trash"></i>
           </b-button>
+
+          <b-button
+            v-b-tooltip.hover
+            @click="abrirModalSenha(row.item)"
+            title="Alterar senha"
+            placement="right"
+            variant="outline-success"
+            style="border: 0;"
+          >
+            <i class="fa fas fa-key"></i>
+          </b-button>
+
+          <!-- <b-button
+            v-b-tooltip.hover
+            @click="abrirModalEstabelecimentos(row.item)"
+            title="Estabelecimentos"
+            placement="right"
+            variant="outline"
+            style="border: 0;"
+          >
+            <i class="fas fa-building"></i>
+          </b-button> -->
         </template>
         <div slot="table-busy" class="text-center text-danger my-2">
           <b-spinner class="align-middle mr-1"></b-spinner>
@@ -78,11 +100,23 @@
       />
 
       <modalDeletar
-      :openModal="modalDeletarShow"
-      @fecharModal="modalDeletarShow = false"
-      :usuario="model"
-      @usuarioDeletado="getAllUsers"
-    />
+        :openModal="modalDeletarShow"
+        @fecharModal="modalDeletarShow = false"
+        :usuario="model"
+        @usuarioDeletado="getAllUsers"
+      />
+
+      <modalSenha
+        :openModal="modalSenhaShow"
+        @fecharModal="modalSenhaShow = false"
+        :usuario="model"
+      />
+
+      <modalEstabelecimento
+        :openModal="modalEstabelecimentosShow"
+        @fecharModal="modalEstabelecimentosShow = false"
+        :usuario="model"
+      />
     </div>
   </div>
 </template>
@@ -93,18 +127,24 @@ import axios from "axios";
 import criacao from "./criacao";
 import editar from "./editar";
 import deletar from "./deletar";
+import senha from "./senha";
+import estabelecimento from "./estabelecimento";
 
 export default {
   components: {
     modalCriar: criacao,
     modalDeletar: deletar,
-    modalEditar: editar
+    modalEditar: editar,
+    modalSenha: senha,
+    modalEstabelecimento: estabelecimento
   },
   data() {
     return {
+      modalEstabelecimentosShow: false,
       modalCriarShow: false,
       modalDeletarShow: false,
       modalEditarShow: false,
+      modalSenhaShow: false,
       model: {},
       filtro: null,
       tableIsBusy: false,
@@ -123,13 +163,19 @@ export default {
     this.getAllUsers();
   },
   methods: {
+    abrirModalEstabelecimentos(usuario) {
+      this.model = usuario;
+      this.modalEstabelecimentosShow = true;
+    },
+    abrirModalSenha(usuario) {
+      this.model = usuario;
+      this.modalSenhaShow = true;
+    },
     abrirModalDeletar(usuario) {
       this.model = usuario;
       this.modalDeletarShow = true;
     },
     abrirModalEditar(usuario) {
-      console.log(usuario);
-      
       this.model = usuario;
       this.modalEditarShow = true;
     },
