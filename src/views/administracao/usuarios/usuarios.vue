@@ -2,7 +2,7 @@
   <div class="m-4">
     <h1>Usuarios</h1>
 
-    <b-button variant="outline-success" class="mt-2" @click="abrirModal">Criar novo</b-button>
+    <b-button variant="outline-success" class="mt-2" @click="abrirModalCriar">Criar novo</b-button>
 
     <b-form-group
       label="Filtrar"
@@ -38,7 +38,7 @@
         <template slot="action" slot-scope="row">
           <b-button
             v-b-tooltip.hover
-            @click="abrirModal(row.item)"
+            @click="abrirModalEditar(row.item)"
             title="Editar Usuario"
             placement="right"
             variant="outline-primary"
@@ -49,7 +49,7 @@
 
           <b-button
             v-b-tooltip.hover
-            @click="abrirModalDelecao(row)"
+            @click="abrirModalDeletar(row.item)"
             title="Excluir Usuario"
             placement="right"
             variant="outline-danger"
@@ -64,151 +64,25 @@
         </div>
       </b-table>
 
-      <b-modal
-        v-model="modalDeletarShow"
-        ref="modalDeletar"
-        title="Atenção"
-        :no-close-on-esc="buttonExcluirIsBusy"
-        :no-close-on-backdrop="buttonExcluirIsBusy"
-        :hide-header-close="buttonExcluirIsBusy"
-      >
-        <p class="my-4">Tem certeza que deseja deletar o usuário com CPF "{{ usuarioAtual.cpf }}"?</p>
+      <modalCriar
+        :openModal="modalCriarShow"
+        @fecharModal="modalCriarShow = false"
+        @usuarioCriado="getAllUsers"
+      />
 
-        <div slot="modal-footer" class="w-100">
-          <b-button
-            :disabled="buttonExcluirIsBusy"
-            variant="primary"
-            style="min-width: 6rem; max-height: 3rem;"
-            size="md"
-            class="float-right"
-            @click="excluirUsuario"
-          >
-            OK
-            <b-spinner small class="ml-2" v-if="buttonExcluirIsBusy" label="Spinning"></b-spinner>
-          </b-button>
-          <b-button
-            :disabled="buttonExcluirIsBusy"
-            variant="danger"
-            size="md"
-            class="mr-2 float-right"
-            @click="fecharModalDeletar"
-          >Cancelar</b-button>
-        </div>
-      </b-modal>
-      <b-modal
-        ref="modalUsuarios"
-        size="lg"
-        title=" Usuarios"
-        @hide="resetModel"
-        :no-close-on-esc="buttonSalvarIsBusy"
-        :no-close-on-backdrop="buttonSalvarIsBusy"
-        :hide-header-close="buttonSalvarIsBusy"
-      >
-        <div slot="modal-footer" class="w-100">
-          <b-button
-            :disabled="buttonSalvarIsBusy"
-            variant="primary"
-            style="min-width: 6rem; max-height: 3rem;"
-            size="md"
-            class="float-right"
-            @click="atualizarSalvar"
-          >
-            OK
-            <b-spinner small class="ml-2" v-if="buttonSalvarIsBusy" label="Spinning"></b-spinner>
-          </b-button>
-          <b-button
-            :disabled="buttonSalvarIsBusy"
-            variant="danger"
-            size="md"
-            class="mr-2 float-right"
-            @click="fecharModalCriar"
-          >Cancelar</b-button>
-        </div>
+      <modalEditar
+        :openModal="modalEditarShow"
+        @fecharModal="modalEditarShow = false"
+        :usuario="model"
+        @usuarioAtualizado="getAllUsers"
+      />
 
-        <div class="card">
-          <div class="card-body">
-            <h2>{{ titleModal }}</h2>
-            <b-form-row>
-              <b-form-group class="pr-4" id="fieldset-1" label="Login: *" label-for="input-1">
-                <b-form-input
-                  style="width:300px;"
-                  id="input-1"
-                  placeholder="CPF"
-                  :disabled="atualizarCriar == 'Atualizar' ? true : false"
-                  :state="validationCpf"
-                  v-model="model.cpf"
-                  trim
-                ></b-form-input>
-                <b-form-invalid-feedback :state="validationCpf">O CPF deve conter 11 digitos</b-form-invalid-feedback>
-                <b-form-valid-feedback :state="validationCpf">Ok</b-form-valid-feedback>
-              </b-form-group>
-
-              <b-form-group class="pr-4" id="fieldset-3" label="Email:" label-for="input-3">
-                <b-form-input style="width:300px;" id="input-3" v-model="model.email" trim></b-form-input>
-              </b-form-group>
-
-              <b-form-group class="pr-4" id="fieldset-4" label="Nome:" label-for="input-4">
-                <b-form-input style="width:300px;" id="input-4" v-model="model.nome" trim></b-form-input>
-              </b-form-group>
-
-              <b-form-group class="pr-4" id="fieldset-5" label="Sobrenome:" label-for="input-5">
-                <b-form-input style="width:300px;" id="input-5" v-model="model.sobrenome" trim></b-form-input>
-              </b-form-group>
-
-              <b-form-group class="pr-4" id="fieldset-6" label="Perfil: *" label-for="input-6">
-                <b-form-select id="input-6" v-model="model.perfil" :options="perfis"></b-form-select>
-              </b-form-group>
-
-              <b-form-group v-if="atualizarCriar == 'Atualizar' ? false : true" class="pr-4" id="fieldset-6" label="Organização: *" label-for="input-6">
-                <b-form-select
-                  :disabled="inputOrganizacao"
-                  id="input-6"
-                  v-model="model.organizacao"
-                  :state="validationOrganizacao"
-                >
-                  <option
-                    v-for="item in organizacoes"
-                    :key="item.org_id"
-                    :value="item.org_id"
-                  >{{ item.org_nome }}</option>
-                </b-form-select>
-                <b-form-invalid-feedback
-                  :state="validationOrganizacao"
-                >A organização deve ser selecionada</b-form-invalid-feedback>
-                <b-form-valid-feedback :state="validationOrganizacao">Ok</b-form-valid-feedback>
-              </b-form-group>
-            </b-form-row>
-
-            <b-form-row v-if="atualizarCriar == 'Criar'">
-              <b-form-group class="pr-4" id="fieldset-2" label="Senha: *" label-for="input-2">
-                <b-form-input
-                  style="width:300px;"
-                  id="input-2"
-                  type="password"
-                  :state="validationSenha"
-                  v-model="model.password"
-                  trim
-                ></b-form-input>
-                <b-form-invalid-feedback :state="validationSenha">{{ stringSenha }}</b-form-invalid-feedback>
-                <b-form-valid-feedback :state="validationSenha">Ok</b-form-valid-feedback>
-              </b-form-group>
-
-              <b-form-group id="fieldset-6" label="Confirme a senha: *" label-for="input-6">
-                <b-form-input
-                  style="width:300px;"
-                  id="input-6"
-                  type="password"
-                  :state="validationSenha"
-                  v-model="model.confirmPassword"
-                  trim
-                ></b-form-input>
-                <b-form-invalid-feedback :state="validationSenha">{{ stringSenha }}</b-form-invalid-feedback>
-                <b-form-valid-feedback :state="validationSenha">Ok</b-form-valid-feedback>
-              </b-form-group>
-            </b-form-row>
-          </div>
-        </div>
-      </b-modal>
+      <modalDeletar
+      :openModal="modalDeletarShow"
+      @fecharModal="modalDeletarShow = false"
+      :usuario="model"
+      @usuarioDeletado="getAllUsers"
+    />
     </div>
   </div>
 </template>
@@ -216,38 +90,24 @@
 import Vue from "vue";
 import iziToast from "izitoast";
 import axios from "axios";
+import criacao from "./criacao";
+import editar from "./editar";
+import deletar from "./deletar";
 
 export default {
-  name: "register",
+  components: {
+    modalCriar: criacao,
+    modalDeletar: deletar,
+    modalEditar: editar
+  },
   data() {
     return {
-      filtro: null,
-      usuarioAtual: {},
+      modalCriarShow: false,
       modalDeletarShow: false,
       modalEditarShow: false,
-      buttonSalvarIsBusy: false,
-      buttonExcluirIsBusy: false,
-      perfis: [
-        { value: null, text: "Selecione" },
-        { value: 1, text: "Administrador" },
-        { value: 2, text: "Usuario" },
-        { value: 3, text: "Designer" }
-      ],
-      organizacoes: [],
+      model: {},
+      filtro: null,
       tableIsBusy: false,
-      model: {
-        userId: null,
-        cpf: "",
-        password: "",
-        confirmPassword: "",
-        email: "",
-        nome: "",
-        sobrenome: "",
-        perfil: null,
-        organizacao: null,
-        ativo: true,
-        oldOrganizacao: null
-      },
       fields: [
         { key: "cpf", label: "cpf" },
         { key: "email", label: "E-mail" },
@@ -256,60 +116,26 @@ export default {
         { key: "perfil", label: "Perfil" },
         { key: "action", label: "Ações" }
       ],
-      users: [],
-      titleModal: "",
-      atualizarCriar: "",
-      organizacoes: [],
-      inputOrganizacao: false
+      users: []
     };
-  },
-  computed: {
-    stringSenha() {
-      if (
-        this.model.password.length < 6 &&
-        this.model.password != this.model.confirmPassword
-      ) {
-        return "A senha deve conter 6 ou mais caracteres";
-      } else if (this.model.password != this.model.confirmPassword) {
-        return "A senha e a confirmação da senha deve ser iguais";
-      }
-    },
-    validationOrganizacao() {
-      if (this.model.organizacao == null) {
-        return undefined;
-      }
-      return this.model.organizacao != null;
-    },
-    validationSobreNome() {
-      return this.model.sobreNome.length > 0;
-    },
-    validationNome() {
-      return this.model.nome.length > 0;
-    },
-    validationEmail() {
-      var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      return re.test(String(this.model.email).toLowerCase());
-    },
-    validationCpf() {
-      if (this.model.cpf.length == 0) {
-        return undefined;
-      }
-      return this.model.cpf.length == 11;
-    },
-    validationSenha() {
-      if (this.model.password.length == 0) {
-        return undefined;
-      }
-      return (
-        this.model.password.length >= 6 &&
-        this.model.password == this.model.confirmPassword
-      );
-    }
   },
   created() {
     this.getAllUsers();
   },
   methods: {
+    abrirModalDeletar(usuario) {
+      this.model = usuario;
+      this.modalDeletarShow = true;
+    },
+    abrirModalEditar(usuario) {
+      console.log(usuario);
+      
+      this.model = usuario;
+      this.modalEditarShow = true;
+    },
+    abrirModalCriar() {
+      this.modalCriarShow = true;
+    },
     atualizarSalvar() {
       if (this.atualizarCriar == "Criar") {
         this.criarNovoUsuario();
@@ -385,61 +211,6 @@ export default {
       this.usuarioAtual = row.item;
       this.modalDeletarShow = true;
     },
-    async criarNovoUsuario() {
-      this.buttonSalvarIsBusy = true;
-      if (
-        this.validationCpf == false ||
-        this.validationSenha == false ||
-        this.model.perfil == null ||
-        this.validationOrganizacao == null ||
-        this.validationOrganizacao == undefined
-      ) {
-        iziToast.warning({
-          title: "Atenção",
-          message: "Todos os campos obrigatórios devem estar preenchidos!",
-          position: "topRight"
-        });
-        this.buttonSalvarIsBusy = false;
-        return;
-      }
-
-      var config = {
-        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
-      };
-
-      await axios
-        .post(
-          "https://jithub.firebaseapp.com/api/user/create",
-          this.model,
-          config
-        )
-        .then(response => {
-          if (response.data.message == "User already exists") {
-            iziToast.warning({
-              title: "Atenção",
-              message: "Usuário já existe!",
-              position: "topRight"
-            });
-            this.buttonSalvarIsBusy = false;
-            return;
-          }
-          this.buttonSalvarIsBusy = false;
-          this.getAllUsers();
-          this.$refs["modalUsuarios"].hide();
-        })
-        .catch(error => {
-          console.log(error.message);
-          this.buttonSalvarIsBusy = false;
-        });
-
-      this.model.cpf = "";
-      this.model.password = "";
-      this.model.email = "";
-      this.model.nome = "";
-      this.model.sobreNome = "";
-      this.model.confirmPassword = "";
-      this.model.perfil = null;
-    },
     getAllUsers() {
       this.tableIsBusy = true;
 
@@ -469,10 +240,7 @@ export default {
     },
     async atualizaUsuario() {
       this.buttonSalvarIsBusy = true;
-      if (
-        this.validationCpf == false ||
-        this.model.perfil == null
-      ) {
+      if (this.validationCpf == false || this.model.perfil == null) {
         iziToast.warning({
           title: "Atenção",
           message: "Todos os campos obrigatórios devem estar preenchidos!",
@@ -502,19 +270,7 @@ export default {
           this.buttonSalvarIsBusy = false;
         });
     },
-    getAllOrganizacoes() {
-      this.inputOrganizacao = true;
-      var config = {
-        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
-      };
 
-      axios
-        .get("https://jithub.firebaseapp.com/api/organizacao/all", config)
-        .then(response => {
-          this.organizacoes = response.data;
-          this.inputOrganizacao = false;
-        });
-    },
     fecharModalDeletar() {
       this.$refs["modalDeletar"].hide();
     },

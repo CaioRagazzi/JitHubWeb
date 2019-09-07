@@ -73,6 +73,16 @@
         >
           <i class="fas fa-building"></i>
         </b-button>
+        <b-button
+          v-b-tooltip.hover
+          @click="abrirModalSenha(row.item)"
+          title="Senha"
+          placement="right"
+          variant="outline-success"
+          style="border: 0;"
+        >
+          <i class="fas fa-key"></i>
+        </b-button>
       </template>
       <div slot="table-busy" class="text-center text-danger my-2">
         <b-spinner class="align-middle mr-1"></b-spinner>
@@ -93,8 +103,17 @@
       @usuarioAtualizado="getAllUsuarios"
     />
 
-    <modalEstabelecimento :openModal="modalEstabelecimentosShow" @fecharModal="modalEstabelecimentosShow = false" :usuario="model" />
+    <modalEstabelecimento
+      :openModal="modalEstabelecimentosShow"
+      @fecharModal="modalEstabelecimentosShow = false"
+      :usuario="model"
+    />
 
+    <modalSenha
+      :openModal="modalSenhaShow"
+      @fecharModal="modalSenhaShow = false"
+      :usuario="model"
+    />
   </div>
 </template>
 
@@ -105,13 +124,15 @@ import axios from "axios";
 import editar from "./editar";
 import deletar from "./deletar";
 import estabelecimento from "./estabelecimento";
+import senha from "./senha";
 
 export default {
   components: {
     wizCadastro,
     modalEditar: editar,
     modalDeletar: deletar,
-    modalEstabelecimento: estabelecimento
+    modalEstabelecimento: estabelecimento,
+    modalSenha: senha
   },
   data() {
     return {
@@ -129,6 +150,7 @@ export default {
       modalEditarShow: Boolean,
       modalExcluirShow: Boolean,
       modalEstabelecimentosShow: Boolean,
+      modalSenhaShow: Boolean,
       model: {}
     };
   },
@@ -136,9 +158,13 @@ export default {
     this.getAllUsuarios();
   },
   methods: {
-    abrirModalEstabelecimentos(usuario){
-      this.model = usuario
-      this.modalEstabelecimentosShow = true      
+    abrirModalSenha(usuario) {
+      this.model = usuario;
+      this.modalSenhaShow = true;
+    },
+    abrirModalEstabelecimentos(usuario) {
+      this.model = usuario;
+      this.modalEstabelecimentosShow = true;
     },
     abrirModalDelecao(usuario) {
       this.model = usuario;

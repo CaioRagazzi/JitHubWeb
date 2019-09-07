@@ -16,10 +16,10 @@
     <div class="main-content" :data="sidebarBackground">
     <dashboard-navbar></dashboard-navbar>
       <div @click="toggleSidebar">
-        <SlideXRightTransition :duration="200" origin="center top" mode="out-in">
+        <FadeTransition :duration="200" origin="center top" mode="out-in">
           <!-- your content here -->
           <router-view></router-view>
-        </SlideXRightTransition>
+        </FadeTransition>
         <!-- <content-footer v-if="!$route.meta.hideFooter"></content-footer> -->
       </div>
     </div>
@@ -28,7 +28,7 @@
 <script>
 import DashboardNavbar from "./DashboardNavbar.vue";
 import ContentFooter from "./ContentFooter.vue";
-import { SlideXRightTransition } from "vue2-transitions";
+import { FadeTransition } from "vue2-transitions";
 import jwt_decode from "jwt-decode";
 import { SidebarMenu } from "vue-sidebar-menu";
 
@@ -37,7 +37,7 @@ export default {
     DashboardNavbar,
     ContentFooter,
     SidebarMenu,
-    SlideXRightTransition
+    FadeTransition
   },
   data() {
     return {
