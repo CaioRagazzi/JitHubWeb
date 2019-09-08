@@ -5,14 +5,14 @@
       size="lg"
       title="Criar Usuario"
       @hide="emitFecharModal"
-      @show="vIfWizard = true"
+      @show="ajusteWizarInicial"
       :no-close-on-esc="buttonSalvarIsBusy"
       no-close-on-backdrop
       :hide-header-close="buttonSalvarIsBusy"
       hide-footer
     >
       <form-wizard
-        v-if="vIfWizard"
+      v-if="wizard"
         title
         subtitle
         nextButtonText="Próximo"
@@ -65,7 +65,7 @@
               <b-form-input
                 style="width:300px;"
                 id="input-5"
-                v-model="model.sobreNome"
+                v-model="model.sobrenome"
                 :state="validationSobreNome"
                 trim
               ></b-form-input>
@@ -210,10 +210,10 @@ export default {
       return this.model.perfil <= 3;
     },
     validationSobreNome() {
-      if (this.model.sobreNome == 0) {
+      if (this.model.sobrenome == 0) {
         return undefined;
       }
-      return this.model.sobreNome.length > 0;
+      return this.model.sobrenome.length > 0;
     },
     validationNome() {
       if (this.model.nome == 0) {
@@ -265,7 +265,7 @@ export default {
   },
   data() {
     return {
-      vIfWizard: false,
+      wizard: true,
       organizacao: [],
       estabelecimentoSelecionado: [],
       treeActive: true,
@@ -283,7 +283,7 @@ export default {
         password: "",
         email: "",
         nome: "",
-        sobreNome: "",
+        sobrenome: "",
         perfil: null,
         ativo: 1,
         confirmPassword: ""
@@ -299,6 +299,9 @@ export default {
       }
     },
     organizacao: function(newVal) {
+      if (this.organizacao.length == 0) {
+        return
+      }
       this.estabelecimentos = [];
       this.getAllEstabelecimentosById(newVal[0]);
     },
@@ -308,9 +311,15 @@ export default {
     }
   },
   methods: {
+    ajusteWizarInicial(){
+      this.wizard = true
+    },
     validaOrganizacoes() {
       if (this.model.perfil == 2) {
-        if (!this.validationOrganizacao || this.estabelecimentoSelecionado.length == 0) {
+        if (
+          !this.validationOrganizacao ||
+          this.estabelecimentoSelecionado.length == 0
+        ) {
           iziToast.warning({
             title: "Atenção",
             message: "Todos os campos obrigatórios devem estar preenchidos!",
@@ -437,9 +446,9 @@ export default {
         });
     },
     emitFecharModal() {
-      this.vIfWizard = false
       this.$emit("fecharModal");
       this.resetModel();
+      this.wizard = false
     },
     fecharModal() {
       this.$refs["openCloseModal"].hide();
@@ -462,7 +471,7 @@ export default {
         password: "",
         email: "",
         nome: "",
-        sobreNome: "",
+        sobrenome: "",
         perfil: null,
         ativo: 1,
         confirmPassword: "",

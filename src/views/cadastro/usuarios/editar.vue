@@ -33,11 +33,11 @@
       <div class="card">
         <div class="card-body">
           <h2>Editar Usuario</h2>
-          <b-form-row>
-            <b-form-group class="pr-4" id="fieldset-3" label="Email:" label-for="input-3">
-              <b-form-input style="width:300px;" id="input-3" v-model="model.email" trim></b-form-input>
-            </b-form-group>
 
+          <b-form-group class="pr-4" id="fieldset-3" label="Email:" label-for="input-3">
+            <b-form-input style="width:300px;" id="input-3" v-model="model.email" trim></b-form-input>
+          </b-form-group>
+          <b-form-row>
             <b-form-group class="pr-4" id="fieldset-4" label="Nome:" label-for="input-4">
               <b-form-input style="width:300px;" id="input-4" v-model="model.nome" trim></b-form-input>
             </b-form-group>

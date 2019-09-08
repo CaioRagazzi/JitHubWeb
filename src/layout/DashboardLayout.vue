@@ -81,7 +81,7 @@ export default {
               class: "nav-link ml-5"
             },
             {
-              title: "Usuario",
+              title: "Usuários",
               href: '/cadastro/usuario',
               class: "nav-link ml-5"
             }
